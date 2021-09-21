@@ -1,0 +1,64 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.31205.134
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "example", "examples\example\example.vcxproj", "{3B32E9C6-E28A-4B13-A8B1-3AC18E7592BE}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "external", "external", "{DD10CEA2-EAA6-4A4D-BF3D-9AFD4328738E}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "glad", "external\glad\glad.vcxproj", "{558AE84F-116B-4E51-B5B3-C8B1417DEAB1}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "glfw", "external\glfw\glfw.vcxproj", "{53BAF5A5-53D4-4EAC-9167-1D1F2B5A2DE2}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "imgui", "external\imgui\imgui.vcxproj", "{76CFBBF1-25D5-410D-916A-BF53ED1EAB28}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "reflection", "reflection", "{FF52DF06-2F70-4364-8BE1-C686E3E6041F}"
+	ProjectSection(SolutionItems) = preProject
+		include\reflection\autoimgui.h = include\reflection\autoimgui.h
+		include\reflection\reflection.h = include\reflection\reflection.h
+		include\reflection\serialization.h = include\reflection\serialization.h
+		include\reflection\util.h = include\reflection\util.h
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "tinyexample", "examples\tinyexample\tinyexample.vcxproj", "{69ABC645-D32A-43E9-BF34-2EA6B7E08BCB}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|x64 = Debug|x64
+		Release|x64 = Release|x64
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{3B32E9C6-E28A-4B13-A8B1-3AC18E7592BE}.Debug|x64.ActiveCfg = Debug|x64
+		{3B32E9C6-E28A-4B13-A8B1-3AC18E7592BE}.Debug|x64.Build.0 = Debug|x64
+		{3B32E9C6-E28A-4B13-A8B1-3AC18E7592BE}.Release|x64.ActiveCfg = Release|x64
+		{3B32E9C6-E28A-4B13-A8B1-3AC18E7592BE}.Release|x64.Build.0 = Release|x64
+		{558AE84F-116B-4E51-B5B3-C8B1417DEAB1}.Debug|x64.ActiveCfg = Debug|x64
+		{558AE84F-116B-4E51-B5B3-C8B1417DEAB1}.Debug|x64.Build.0 = Debug|x64
+		{558AE84F-116B-4E51-B5B3-C8B1417DEAB1}.Release|x64.ActiveCfg = Release|x64
+		{558AE84F-116B-4E51-B5B3-C8B1417DEAB1}.Release|x64.Build.0 = Release|x64
+		{53BAF5A5-53D4-4EAC-9167-1D1F2B5A2DE2}.Debug|x64.ActiveCfg = Debug|x64
+		{53BAF5A5-53D4-4EAC-9167-1D1F2B5A2DE2}.Debug|x64.Build.0 = Debug|x64
+		{53BAF5A5-53D4-4EAC-9167-1D1F2B5A2DE2}.Release|x64.ActiveCfg = Release|x64
+		{53BAF5A5-53D4-4EAC-9167-1D1F2B5A2DE2}.Release|x64.Build.0 = Release|x64
+		{76CFBBF1-25D5-410D-916A-BF53ED1EAB28}.Debug|x64.ActiveCfg = Debug|x64
+		{76CFBBF1-25D5-410D-916A-BF53ED1EAB28}.Debug|x64.Build.0 = Debug|x64
+		{76CFBBF1-25D5-410D-916A-BF53ED1EAB28}.Release|x64.ActiveCfg = Release|x64
+		{76CFBBF1-25D5-410D-916A-BF53ED1EAB28}.Release|x64.Build.0 = Release|x64
+		{69ABC645-D32A-43E9-BF34-2EA6B7E08BCB}.Debug|x64.ActiveCfg = Debug|x64
+		{69ABC645-D32A-43E9-BF34-2EA6B7E08BCB}.Debug|x64.Build.0 = Debug|x64
+		{69ABC645-D32A-43E9-BF34-2EA6B7E08BCB}.Release|x64.ActiveCfg = Release|x64
+		{69ABC645-D32A-43E9-BF34-2EA6B7E08BCB}.Release|x64.Build.0 = Release|x64
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{558AE84F-116B-4E51-B5B3-C8B1417DEAB1} = {DD10CEA2-EAA6-4A4D-BF3D-9AFD4328738E}
+		{53BAF5A5-53D4-4EAC-9167-1D1F2B5A2DE2} = {DD10CEA2-EAA6-4A4D-BF3D-9AFD4328738E}
+		{76CFBBF1-25D5-410D-916A-BF53ED1EAB28} = {DD10CEA2-EAA6-4A4D-BF3D-9AFD4328738E}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {77C0A8CE-3205-46E1-88E6-5AA5B3D664A4}
+	EndGlobalSection
+EndGlobal
