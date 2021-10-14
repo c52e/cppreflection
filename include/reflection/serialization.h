@@ -103,17 +103,6 @@ public:
     }
 };
 
-template<>
-class Type<ISerialization, const char*> : public TypeBase<ISerialization, const char*> {
-public:
-    void Serialize(const void* addr, rapidjson::PrettyWriter<rapidjson::StringBuffer>& writer) const override {
-        const auto& v = *static_cast<const ValueType*>(addr);
-        writer.String(v);
-    }
-
-    void Deserialize(void* addr, const rapidjson::Value& value) const override {/*do nothing*/}
-};
-
 template<class T>
 class Type<ISerialization, T, std::enable_if_t<std::is_enum_v<T>>> : public TypeBase<ISerialization, T> {
 public:
@@ -133,10 +122,13 @@ public:
     }
 };
 
+template<class T, class Enable = void>
+class _SerializationPointerTypeHelper;
+
 template<class T>
-class Type<ISerialization, T*, std::enable_if_t<std::is_base_of_v<ISerialization, T> && !SubclassInfo<T>::has>> : public TypeBase<ISerialization, T*> {
+class _SerializationPointerTypeHelper<T*, std::enable_if_t<std::is_base_of_v<ISerialization, T> && !SubclassInfo<T>::has>> {
 public:
-    void Serialize(const void* addr, rapidjson::PrettyWriter<rapidjson::StringBuffer>& writer) const override {
+    static void Serialize(const void* addr, rapidjson::PrettyWriter<rapidjson::StringBuffer>& writer) {
         const auto v = *static_cast<T*const*>(addr); // Must NOT directly convert from void* to baseclass*
 
         if (v) {
@@ -153,7 +145,7 @@ public:
         }
     }
 
-    void Deserialize(void* addr, const rapidjson::Value& value) const override {
+    static void Deserialize(void* addr, const rapidjson::Value& value) {
         auto& v = *static_cast<T**>(addr);
         if (value.IsNull()) {
             delete v;
@@ -174,12 +166,12 @@ public:
 };
 
 template<class T>
-class Type<ISerialization, T*, std::enable_if_t<std::is_base_of_v<ISerialization, T>&& SubclassInfo<T>::has>> : public TypeBase<ISerialization, T*> {
+class _SerializationPointerTypeHelper<T*, std::enable_if_t<std::is_base_of_v<ISerialization, T>&& SubclassInfo<T>::has>> {
 public:
     static constexpr auto kTypeKey = "type";
     static constexpr auto kDataKey = "data";
 
-    void Serialize(const void* addr, rapidjson::PrettyWriter<rapidjson::StringBuffer>& writer) const override {
+    static void Serialize(const void* addr, rapidjson::PrettyWriter<rapidjson::StringBuffer>& writer) {
         const auto v = *static_cast<T* const*>(addr);
         if (v) {
             writer.StartObject();
@@ -194,7 +186,7 @@ public:
         }
     }
 
-    void Deserialize(void* addr, const rapidjson::Value& value) const override {
+    static void Deserialize(void* addr, const rapidjson::Value& value) {
         R_ASSERT(value.IsObject() || value.IsNull());
         auto& v = *static_cast<T**>(addr);
         delete v; // Always delete polymorphic pointer
@@ -214,9 +206,9 @@ public:
 };
 
 template<class T>
-class Type<ISerialization, T*, std::enable_if_t<!std::is_base_of_v<ISerialization, T>>> : public TypeBase<ISerialization, T*> {
+class _SerializationPointerTypeHelper<T*, std::enable_if_t<!std::is_base_of_v<ISerialization, T>>> {
 public:
-    void Serialize(const void* addr, rapidjson::PrettyWriter<rapidjson::StringBuffer>& writer) const override {
+    static void Serialize(const void* addr, rapidjson::PrettyWriter<rapidjson::StringBuffer>& writer) {
         const auto v = *static_cast<const T* const*>(addr);
         if (v)
             Type<ISerialization, T>::GetIType()->Serialize(v, writer);
@@ -224,7 +216,7 @@ public:
             writer.Null();
     }
 
-    void Deserialize(void* addr, const rapidjson::Value& value) const override {
+    static void Deserialize(void* addr, const rapidjson::Value& value) {
         auto& v = *static_cast<T**>(addr);
         if (value.IsNull()) {
             delete v;
@@ -246,13 +238,13 @@ public:
     void Serialize(const void* addr, rapidjson::PrettyWriter<rapidjson::StringBuffer>& writer) const override {
         const auto& v = *static_cast<const ValueType*>(addr);
         auto p = v.get();
-        Type<ISerialization, ElemType*>::GetIType()->Serialize(&p, writer);
+        _SerializationPointerTypeHelper<ElemType*>::Serialize(&p, writer);
     }
 
     void Deserialize(void* addr, const rapidjson::Value& value) const override {
         auto& v = *static_cast<ValueType*>(addr);
         ElemType* tmp = nullptr;
-        Type<ISerialization, ElemType*>::GetIType()->Deserialize(&tmp, value);
+        _SerializationPointerTypeHelper<ElemType*>::Deserialize(&tmp, value);
         v.reset(tmp);
     }
 };
@@ -275,11 +267,6 @@ public:
         R_ASSERT(value.IsArray());
         auto& v = *static_cast<ValueType*>(addr);
 
-        if constexpr (std::is_pointer_v<_Ty>) {
-            for (const auto p : v) {
-                delete p;
-            }
-        }
         v.clear();
         for (const auto& e : value.GetArray()) {
             _Ty tmp{};
@@ -307,11 +294,6 @@ struct _SerializationMapTypeHelper {
         R_ASSERT(value.IsObject());
         auto& v = *static_cast<T*>(addr);
         
-        if constexpr (std::is_pointer_v<_Ty>) {
-            for (const auto& [key, p] : v) {
-                delete p;
-            }
-        }
         v.clear();
         for (const auto& e : value.GetObject()) {
             _Ty tmp{};

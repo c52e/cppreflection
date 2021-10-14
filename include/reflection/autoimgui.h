@@ -105,9 +105,12 @@ private:
 };
 
 template<class T>
-class Type<IAutoImGui, T*> : public TypeBase<IAutoImGui, T*> {
+class _AutoImGuiPointerTypeHelper;
+
+template<class T>
+class _AutoImGuiPointerTypeHelper<T*> {
 public:
-    void DrawAutoImGui(void* addr, const char* name, const Userdata<IAutoImGui>::Type& userdata) const override {
+    static void DrawAutoImGui(void* addr, const char* name, const Userdata<IAutoImGui>::Type& userdata) {
         auto& p = *static_cast<T**>(addr);
 
         if (p) {
@@ -159,7 +162,7 @@ public:
     void DrawAutoImGui(void* addr, const char* name, const Userdata<IAutoImGui>::Type& userdata) const override {
         auto& v = *static_cast<ValueType*>(addr);
         auto p = v.release();
-        Type<IAutoImGui, ElemType*>::GetIType()->DrawAutoImGui(&p, name, userdata);
+        _AutoImGuiPointerTypeHelper<ElemType*>::DrawAutoImGui(&p, name, userdata);
         v.reset(p);
     }
 };
@@ -175,11 +178,6 @@ public:
         ScopeImGuiTreeNode tree(name);
         if (ScopeImGuiPopupContextItem popup; popup) {
             if (ImGui::MenuItem("clear")) {
-                if constexpr (std::is_pointer_v<_Ty>) {
-                    for (const auto p : v) {
-                        delete p;
-                    }
-                }
                 v.clear();
             }
             else if (ImGui::MenuItem("append")) {
@@ -187,9 +185,6 @@ public:
             }
             else if (ImGui::MenuItem("pop")) {
                 if (!v.empty()) {
-                    if constexpr (std::is_pointer_v<_Ty>) {
-                        delete v.back();
-                    }
                     v.pop_back();
                 }
             }
@@ -224,11 +219,6 @@ struct _AutoImGuiMapTypeHelper {
         if (ScopeImGuiPopupContextItem popup; popup) {
             static char keybuf[128];
             if (ImGui::MenuItem("clear")) {
-                if constexpr (std::is_pointer_v<_Ty>) {
-                    for (const auto& [key, p] : v) {
-                        delete p;
-                    }
-                }
                 v.clear();
             }
             ImGui::InputText("##keyinput", keybuf, IM_ARRAYSIZE(keybuf));
@@ -248,9 +238,6 @@ struct _AutoImGuiMapTypeHelper {
                 Type<IAutoImGui, _Ty>::GetIType()->DrawAutoImGui(&value, key.c_str(), userdata);
                 sprintf_s(buf, "erase##%llu", i++);
                 if (ImGui::Button(buf)) {
-                    if constexpr (std::is_pointer_v<_Ty>) {
-                        delete value;
-                    }
                     v.erase(itr);
                     break;
                 }

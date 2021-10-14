@@ -57,15 +57,6 @@ enum class Enum {
 
 class Test : public reflection::ISerialization, public reflection::IAutoImGui {
 public:
-    ~Test() {
-        delete pi;
-        delete epd;
-        for (auto p : vecrawp)
-            delete p;
-        for (const auto& [key, p] : umap)
-            delete p;
-    }
-
     Enum e{};
     int i{};
     float f{};
@@ -77,15 +68,11 @@ public:
     Inner inner{};
     std::list<float> li;
     std::map<std::string, int> map;
-    std::unordered_map<std::string, int*> umap;
-    int* pi{};
-    double* epd{};
+    std::unordered_map<std::string, std::unique_ptr<int>> umap;
     std::unique_ptr<float> uf{};
     std::unique_ptr<Shape> shape;
     std::vector<std::unique_ptr<Shape>> vec;
-    std::vector<Shape*> vecrawp;
     std::vector<float> vecf;
-    const char* constchar = "constchar data";
     std::unique_ptr<Test> pnext;
 
 FIELD_DECLARATION_BEGIN(Test, ISerialization)
@@ -100,12 +87,8 @@ FIELD_DECLARATION_BEGIN(Test, ISerialization)
     FIELD_DECLARATION("umap", umap)
     FIELD_DECLARATION("uf", uf)
     FIELD_DECLARATION("shape", shape)
-    FIELD_DECLARATION("pi", pi)
-    FIELD_DECLARATION("epd", epd)
     FIELD_DECLARATION("vec", vec)
     FIELD_DECLARATION("vecf", vecf)
-    FIELD_DECLARATION("vecrawp", vecrawp)
-    FIELD_DECLARATION("constchar", constchar)
     FIELD_DECLARATION("pnext", pnext)
 FIELD_DECLARATION_END()
 
@@ -120,7 +103,6 @@ FIELD_DECLARATION_BEGIN(Test, IAutoImGui)
     FIELD_DECLARATION("pnext", pnext)
     FIELD_DECLARATION("vec", vec)
     FIELD_DECLARATION("vecf", vecf, { { reflection::AutoImGuiArg::SliderFloatMin, 0.0f }, {reflection::AutoImGuiArg::SliderFloatMax, 1000.0f} })
-    FIELD_DECLARATION("vecrawp", vecrawp)
     FIELD_DECLARATION("map", map)
     FIELD_DECLARATION("umap", umap)
 FIELD_DECLARATION_END()
@@ -170,10 +152,8 @@ void operator delete(void* ptr) {
 const char* src = R"(
 {
     "b": false,
-    "constchar": "constchar data",
     "d": 1.23,
     "e": "E1",
-    "epd": null,
     "f": 2.3399999141693115,
     "i": 889,
     "li": [
@@ -184,7 +164,6 @@ const char* src = R"(
         "key": 9,
         "new key": 999
     },
-    "pi": 54632,
     "s": "string",
     "shape": null,
     "uf": 999.5,
@@ -210,26 +189,14 @@ const char* src = R"(
     "vecf": [
         0.5
     ],
-    "vecrawp": [
-        {
-            "type": "class Circle",
-            "data": {
-                "r": 5.0
-            }
-        },
-        null
-    ],
     "pnext": {
         "b": false,
-        "constchar": "constchar data",
         "d": 1.23,
         "e": "E1",
-        "epd": null,
         "f": 2.3399999141693115,
         "i": 889,
         "li": [],
         "map": {},
-        "pi": 54632,
         "s": "string",
         "shape": null,
         "uf": 999.5,
@@ -238,7 +205,6 @@ const char* src = R"(
         },
         "vec": [],
         "vecf": [],
-        "vecrawp": [],
         "pnext": null
     }
 }
