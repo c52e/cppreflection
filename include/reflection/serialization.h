@@ -122,20 +122,20 @@ public:
     }
 };
 
-template<class T, class Enable = void>
-class _SerializationPointerTypeHelper;
-
-template<class T>
-class _SerializationPointerTypeHelper<T*, std::enable_if_t<std::is_base_of_v<ISerialization, T> && !SubclassInfo<T>::has>> {
+template<class _Ty, class _Dx>
+class Type<ISerialization, std::unique_ptr<_Ty, _Dx>, std::enable_if_t<std::is_base_of_v<ISerialization, _Ty> && !SubclassInfo<_Ty>::has>>
+    : public TypeBase<ISerialization, std::unique_ptr<_Ty, _Dx>> {
 public:
-    static void Serialize(const void* addr, rapidjson::PrettyWriter<rapidjson::StringBuffer>& writer) {
-        const auto v = *static_cast<T*const*>(addr); // Must NOT directly convert from void* to baseclass*
+    using typename Type::ValueType;
+
+    void Serialize(const void* addr, rapidjson::PrettyWriter<rapidjson::StringBuffer>& writer) const override {
+        const auto& v = *static_cast<const ValueType*>(addr); // Must NOT directly convert from void* to baseclass*
 
         if (v) {
             writer.StartObject();
-            for (const auto& [name, fun] : static_cast<ISerialization*>(v)->GetFieldTable()) {
+            for (const auto& [name, fun] : static_cast<ISerialization*>(v.get())->GetFieldTable()) {
                 writer.String(name.c_str());
-                auto info = fun(v);
+                auto info = fun(v.get());
                 info.type->Serialize(info.address, writer);
             }
             writer.EndObject();
@@ -145,34 +145,35 @@ public:
         }
     }
 
-    static void Deserialize(void* addr, const rapidjson::Value& value) {
-        auto& v = *static_cast<T**>(addr);
+    void Deserialize(void* addr, const rapidjson::Value& value) const override {
+        auto& v = *static_cast<ValueType*>(addr);
         if (value.IsNull()) {
-            delete v;
-            v = nullptr;
+            v.reset();
         }
         else {
             R_ASSERT(value.IsObject());
             if (v == nullptr)
-                v = new T();
+                v.reset(new _Ty());
             for (const auto& [name, fun] : v->GetFieldTable(static_cast<ISerialization*>(nullptr))) {
                 auto itr = value.FindMember(name.c_str());
                 R_ASSERT(itr != value.MemberEnd());
-                auto info = fun(v);
+                auto info = fun(v.get());
                 info.type->Deserialize(info.address, itr->value);
             }
         }
     }
 };
 
-template<class T>
-class _SerializationPointerTypeHelper<T*, std::enable_if_t<std::is_base_of_v<ISerialization, T>&& SubclassInfo<T>::has>> {
+template<class _Ty, class _Dx>
+class Type<ISerialization, std::unique_ptr<_Ty, _Dx>, std::enable_if_t<std::is_base_of_v<ISerialization, _Ty>&& SubclassInfo<_Ty>::has>>
+    : public TypeBase<ISerialization, std::unique_ptr<_Ty, _Dx>> {
 public:
+    using typename Type::ValueType;
     static constexpr auto kTypeKey = "type";
     static constexpr auto kDataKey = "data";
 
-    static void Serialize(const void* addr, rapidjson::PrettyWriter<rapidjson::StringBuffer>& writer) {
-        const auto v = *static_cast<T* const*>(addr);
+    void Serialize(const void* addr, rapidjson::PrettyWriter<rapidjson::StringBuffer>& writer) const override {
+        const auto& v = *static_cast<const ValueType*>(addr);
         if (v) {
             writer.StartObject();
             writer.String(kTypeKey);
@@ -186,17 +187,15 @@ public:
         }
     }
 
-    static void Deserialize(void* addr, const rapidjson::Value& value) {
+    void Deserialize(void* addr, const rapidjson::Value& value) const override {
         R_ASSERT(value.IsObject() || value.IsNull());
-        auto& v = *static_cast<T**>(addr);
-        delete v; // Always delete polymorphic pointer
-        v = nullptr;
+        auto& v = *static_cast<ValueType*>(addr);
         if (value.IsObject()) {
             auto typeitr = value.FindMember(kTypeKey);
             R_ASSERT(typeitr != value.MemberEnd());
             auto& name = typeitr->value;
             R_ASSERT(name.IsString());
-            v = SubclassInfo<T>::GetFactoryTable().at(name.GetString())();
+            v.reset(SubclassInfo<_Ty>::GetFactoryTable().at(name.GetString())());
 
             auto dataitr = value.FindMember(kDataKey);
             R_ASSERT(dataitr != value.MemberEnd());
@@ -205,47 +204,30 @@ public:
     }
 };
 
-template<class T>
-class _SerializationPointerTypeHelper<T*, std::enable_if_t<!std::is_base_of_v<ISerialization, T>>> {
-public:
-    static void Serialize(const void* addr, rapidjson::PrettyWriter<rapidjson::StringBuffer>& writer) {
-        const auto v = *static_cast<const T* const*>(addr);
-        if (v)
-            Type<ISerialization, T>::GetIType()->Serialize(v, writer);
-        else
-            writer.Null();
-    }
-
-    static void Deserialize(void* addr, const rapidjson::Value& value) {
-        auto& v = *static_cast<T**>(addr);
-        if (value.IsNull()) {
-            delete v;
-            v = nullptr;
-        }
-        else {
-            if (v == nullptr)
-                v = new T();
-            Type<ISerialization, T>::GetIType()->Deserialize(v, value);
-        }
-    }
-};
-
 template<class _Ty, class _Dx>
-class Type<ISerialization, std::unique_ptr<_Ty, _Dx>> : public TypeBase<ISerialization, std::unique_ptr<_Ty, _Dx>> {
+class Type<ISerialization, std::unique_ptr<_Ty, _Dx>, std::enable_if_t<!std::is_base_of_v<ISerialization, _Ty>>>
+    : public TypeBase<ISerialization, std::unique_ptr<_Ty, _Dx>> {
 public:
     using typename Type::ValueType;
 
     void Serialize(const void* addr, rapidjson::PrettyWriter<rapidjson::StringBuffer>& writer) const override {
         const auto& v = *static_cast<const ValueType*>(addr);
-        auto p = v.get();
-        _SerializationPointerTypeHelper<_Ty*>::Serialize(&p, writer);
+        if (v)
+            Type<ISerialization, _Ty>::GetIType()->Serialize(v.get(), writer);
+        else
+            writer.Null();
     }
 
     void Deserialize(void* addr, const rapidjson::Value& value) const override {
         auto& v = *static_cast<ValueType*>(addr);
-        _Ty* tmp = nullptr;
-        _SerializationPointerTypeHelper<_Ty*>::Deserialize(&tmp, value);
-        v.reset(tmp);
+        if (value.IsNull()) {
+            v.reset();
+        }
+        else {
+            if (v == nullptr)
+                v.reset(new _Ty());
+            Type<ISerialization, _Ty>::GetIType()->Deserialize(v.get(), value);
+        }
     }
 };
 

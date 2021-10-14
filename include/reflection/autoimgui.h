@@ -104,56 +104,6 @@ private:
     std::array<std::string, magic_enum::enum_count<T>()> enums;
 };
 
-template<class T>
-class _AutoImGuiPointerTypeHelper;
-
-template<class T>
-class _AutoImGuiPointerTypeHelper<T*> {
-public:
-    static void DrawAutoImGui(void* addr, const char* name, const Userdata<IAutoImGui>::Type& userdata) {
-        auto& p = *static_cast<T**>(addr);
-
-        if (p) {
-            ScopeImGuiTreeNode tree(name);
-            if (ScopeImGuiPopupContextItem popup; popup) {
-                if (ImGui::MenuItem("delete")) {
-                    delete p;
-                    p = nullptr;
-                }
-            }
-            if (tree && p != nullptr) {
-                if constexpr (std::is_base_of_v<IAutoImGui, T>) {
-                    for (const auto& [name, fun] : static_cast<IAutoImGui*>(p)->GetFieldTable()) {
-                        auto info = fun(p);
-                        info.type->DrawAutoImGui(info.address, name.c_str(), info.userdata);
-                    }
-                }
-                else {
-                    Type<IAutoImGui, T>::GetIType()->DrawAutoImGui(p, "value", userdata);
-                }
-            }
-        }
-        else {
-            ImGui::Text("%s is null", name);
-            if (ScopeImGuiPopupContextItem popup(name); popup) {
-                if constexpr (std::is_base_of_v<IAutoImGui, T> && SubclassInfo<T>::has) {
-                    for (const auto& [name, factory] : SubclassInfo<T>::GetFactoryTable()) {
-                        if (ImGui::MenuItem(name.c_str())) {
-                            p = factory();
-                            break;
-                        }
-                    }
-                }
-                else {
-                    if (ImGui::MenuItem("new")) {
-                        p = new T();
-                    }
-                }
-            }
-        }
-    }
-};
-
 template<class _Ty, class _Dx>
 class Type<IAutoImGui, std::unique_ptr<_Ty, _Dx>> : public TypeBase<IAutoImGui, std::unique_ptr<_Ty, _Dx>> {
 public:
@@ -161,9 +111,44 @@ public:
 
     void DrawAutoImGui(void* addr, const char* name, const Userdata<IAutoImGui>::Type& userdata) const override {
         auto& v = *static_cast<ValueType*>(addr);
-        auto p = v.release();
-        _AutoImGuiPointerTypeHelper<_Ty*>::DrawAutoImGui(&p, name, userdata);
-        v.reset(p);
+
+        if (v) {
+            ScopeImGuiTreeNode tree(name);
+            if (ScopeImGuiPopupContextItem popup; popup) {
+                if (ImGui::MenuItem("delete")) {
+                    v.reset();
+                }
+            }
+            if (tree && v != nullptr) {
+                if constexpr (std::is_base_of_v<IAutoImGui, _Ty>) {
+                    for (const auto& [name, fun] : static_cast<IAutoImGui*>(v.get())->GetFieldTable()) {
+                        auto info = fun(v.get());
+                        info.type->DrawAutoImGui(info.address, name.c_str(), info.userdata);
+                    }
+                }
+                else {
+                    Type<IAutoImGui, _Ty>::GetIType()->DrawAutoImGui(v.get(), "value", userdata);
+                }
+            }
+        }
+        else {
+            ImGui::Text("%s is null", name);
+            if (ScopeImGuiPopupContextItem popup(name); popup) {
+                if constexpr (std::is_base_of_v<IAutoImGui, _Ty> && SubclassInfo<_Ty>::has) {
+                    for (const auto& [name, factory] : SubclassInfo<_Ty>::GetFactoryTable()) {
+                        if (ImGui::MenuItem(name.c_str())) {
+                            v.reset(factory());
+                            break;
+                        }
+                    }
+                }
+                else {
+                    if (ImGui::MenuItem("new")) {
+                        v.reset(new _Ty());
+                    }
+                }
+            }
+        }
     }
 };
 
