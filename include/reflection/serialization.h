@@ -230,27 +230,30 @@ public:
     }
 };
 
-template<class ElemType>
-class Type<ISerialization, std::unique_ptr<ElemType>> : public TypeBase<ISerialization, std::unique_ptr<ElemType>> {
+template<class _Ty, class _Dx>
+class Type<ISerialization, std::unique_ptr<_Ty, _Dx>> : public TypeBase<ISerialization, std::unique_ptr<_Ty, _Dx>> {
 public:
     using typename Type::ValueType;
 
     void Serialize(const void* addr, rapidjson::PrettyWriter<rapidjson::StringBuffer>& writer) const override {
         const auto& v = *static_cast<const ValueType*>(addr);
         auto p = v.get();
-        _SerializationPointerTypeHelper<ElemType*>::Serialize(&p, writer);
+        _SerializationPointerTypeHelper<_Ty*>::Serialize(&p, writer);
     }
 
     void Deserialize(void* addr, const rapidjson::Value& value) const override {
         auto& v = *static_cast<ValueType*>(addr);
-        ElemType* tmp = nullptr;
-        _SerializationPointerTypeHelper<ElemType*>::Deserialize(&tmp, value);
+        _Ty* tmp = nullptr;
+        _SerializationPointerTypeHelper<_Ty*>::Deserialize(&tmp, value);
         v.reset(tmp);
     }
 };
 
 template<template<class _Ty, class _Alloc> class ContainerType, class _Ty, class _Alloc>
-class Type<ISerialization, ContainerType<_Ty, _Alloc>> : public TypeBase<ISerialization, ContainerType<_Ty, _Alloc>> {
+class Type<ISerialization, ContainerType<_Ty, _Alloc>
+    , std::enable_if_t<std::is_same_v<ContainerType<_Ty, _Alloc>, std::vector<_Ty, _Alloc>>
+                    || std::is_same_v<ContainerType<_Ty, _Alloc>, std::list<_Ty, _Alloc>>>>
+    : public TypeBase<ISerialization, ContainerType<_Ty, _Alloc>> {
 public:
     using typename Type::ValueType;
 

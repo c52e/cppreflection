@@ -154,21 +154,24 @@ public:
     }
 };
 
-template<class ElemType>
-class Type<IAutoImGui, std::unique_ptr<ElemType>> : public TypeBase<IAutoImGui, std::unique_ptr<ElemType>> {
+template<class _Ty, class _Dx>
+class Type<IAutoImGui, std::unique_ptr<_Ty, _Dx>> : public TypeBase<IAutoImGui, std::unique_ptr<_Ty, _Dx>> {
 public:
     using typename Type::ValueType;
 
     void DrawAutoImGui(void* addr, const char* name, const Userdata<IAutoImGui>::Type& userdata) const override {
         auto& v = *static_cast<ValueType*>(addr);
         auto p = v.release();
-        _AutoImGuiPointerTypeHelper<ElemType*>::DrawAutoImGui(&p, name, userdata);
+        _AutoImGuiPointerTypeHelper<_Ty*>::DrawAutoImGui(&p, name, userdata);
         v.reset(p);
     }
 };
 
 template<template<class _Ty, class _Alloc> class ContainerType, class _Ty, class _Alloc>
-class Type<IAutoImGui, ContainerType<_Ty, _Alloc>> : public TypeBase<IAutoImGui, ContainerType<_Ty, _Alloc>> {
+class Type<IAutoImGui, ContainerType<_Ty, _Alloc>
+    , std::enable_if_t<std::is_same_v<ContainerType<_Ty, _Alloc>, std::vector<_Ty, _Alloc>>
+                    || std::is_same_v<ContainerType<_Ty, _Alloc>, std::list<_Ty, _Alloc>>>>
+    : public TypeBase<IAutoImGui, ContainerType<_Ty, _Alloc>> {
 public:
     using typename Type::ValueType;
 

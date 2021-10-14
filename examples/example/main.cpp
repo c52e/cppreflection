@@ -55,6 +55,14 @@ enum class Enum {
     E1, E2
 };
 
+template <class _Ty>
+struct my_delete {
+    void operator()(_Ty* _Ptr) const noexcept /* strengthened */ {
+        static_assert(0 < sizeof(_Ty), "can't delete an incomplete type");
+        delete _Ptr;
+    }
+};
+
 class Test : public reflection::ISerialization, public reflection::IAutoImGui {
 public:
     Enum e{};
@@ -69,7 +77,7 @@ public:
     std::list<float> li;
     std::map<std::string, int> map;
     std::unordered_map<std::string, std::unique_ptr<int>> umap;
-    std::unique_ptr<float> uf{};
+    std::unique_ptr<float, my_delete<float>> uf{};
     std::unique_ptr<Shape> shape;
     std::vector<std::unique_ptr<Shape>> vec;
     std::vector<float> vecf;
