@@ -107,7 +107,7 @@ private:
 template<class _Ty, class _Dx>
 class Type<IAutoImGui, std::unique_ptr<_Ty, _Dx>> : public TypeBase<IAutoImGui, std::unique_ptr<_Ty, _Dx>> {
 public:
-    using typename Type::ValueType;
+    using ValueType = std::unique_ptr<_Ty, _Dx>;
 
     void DrawAutoImGui(void* addr, const char* name, const Userdata<IAutoImGui>::Type& userdata) const override {
         auto& v = *static_cast<ValueType*>(addr);
@@ -192,7 +192,7 @@ class Type<IAutoImGui, ContainerType<_Ty, _Alloc>
                     || std::is_same_v<ContainerType<_Ty, _Alloc>, std::list<_Ty, _Alloc>>>>
     : public TypeBase<IAutoImGui, ContainerType<_Ty, _Alloc>> {
 public:
-    using typename Type::ValueType;
+    using ValueType = ContainerType<_Ty, _Alloc>;
 
     void DrawAutoImGui(void* addr, const char* name, const Userdata<IAutoImGui>::Type& userdata) const override {
         auto& v = *static_cast<ValueType*>(addr);
@@ -273,7 +273,7 @@ template<template<class _Kty, class _Ty, class _Pr, class _Alloc> class Containe
     class Type<IAutoImGui, ContainerType<_Kty, _Ty, _Pr, _Alloc>, std::enable_if_t<std::is_same_v<std::string, _Kty>>>
     : public TypeBase<IAutoImGui, ContainerType<_Kty, _Ty, _Pr, _Alloc>> {
     public:
-        using typename Type::ValueType;
+        using ValueType = ContainerType<_Kty, _Ty, _Pr, _Alloc>;
 
         void DrawAutoImGui(void* addr, const char* name, const Userdata<IAutoImGui>::Type& userdata) const override {
             _AutoImGuiMapTypeHelper<ValueType>::DrawAutoImGui(addr, name, userdata);
@@ -285,7 +285,7 @@ template<template <class _Kty, class _Ty, class _Hasher, class _Keyeq, class _Al
     class Type<IAutoImGui, ContainerType<_Kty, _Ty, _Hasher, _Keyeq, _Alloc>, std::enable_if_t<std::is_same_v<std::string, _Kty>>>
     : public TypeBase<IAutoImGui, ContainerType<_Kty, _Ty, _Hasher, _Keyeq, _Alloc>> {
     public:
-        using typename Type::ValueType;
+        using ValueType = ContainerType<_Kty, _Ty, _Hasher, _Keyeq, _Alloc>;
 
         void DrawAutoImGui(void* addr, const char* name, const Userdata<IAutoImGui>::Type& userdata) const override {
             _AutoImGuiMapTypeHelper<ValueType>::DrawAutoImGui(addr, name, userdata);

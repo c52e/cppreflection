@@ -132,7 +132,7 @@ template<class _Ty, class _Dx>
 class Type<ISerialization, std::unique_ptr<_Ty, _Dx>, std::enable_if_t<std::is_base_of_v<ISerialization, _Ty> && !SubclassInfo<_Ty>::has>>
     : public TypeBase<ISerialization, std::unique_ptr<_Ty, _Dx>> {
 public:
-    using typename Type::ValueType;
+    using ValueType = std::unique_ptr<_Ty, _Dx>;
 
     void Serialize(const void* addr, rapidjson::PrettyWriter<rapidjson::StringBuffer>& writer) const override {
         const auto& v = *static_cast<const ValueType*>(addr); // Must NOT directly convert from void* to baseclass*
@@ -178,7 +178,7 @@ template<class _Ty, class _Dx>
 class Type<ISerialization, std::unique_ptr<_Ty, _Dx>, std::enable_if_t<std::is_base_of_v<ISerialization, _Ty>&& SubclassInfo<_Ty>::has>>
     : public TypeBase<ISerialization, std::unique_ptr<_Ty, _Dx>> {
 public:
-    using typename Type::ValueType;
+    using ValueType = std::unique_ptr<_Ty, _Dx>;
     static constexpr auto kTypeKey = "type";
     static constexpr auto kDataKey = "data";
 
@@ -218,7 +218,7 @@ template<class _Ty, class _Dx>
 class Type<ISerialization, std::unique_ptr<_Ty, _Dx>, std::enable_if_t<!std::is_base_of_v<ISerialization, _Ty>>>
     : public TypeBase<ISerialization, std::unique_ptr<_Ty, _Dx>> {
 public:
-    using typename Type::ValueType;
+    using ValueType = std::unique_ptr<_Ty, _Dx>;
 
     void Serialize(const void* addr, rapidjson::PrettyWriter<rapidjson::StringBuffer>& writer) const override {
         const auto& v = *static_cast<const ValueType*>(addr);
@@ -294,7 +294,7 @@ class Type<ISerialization, ContainerType<_Ty, _Alloc>
                     || std::is_same_v<ContainerType<_Ty, _Alloc>, std::list<_Ty, _Alloc>>>>
     : public TypeBase<ISerialization, ContainerType<_Ty, _Alloc>> {
 public:
-    using typename Type::ValueType;
+    using ValueType = ContainerType<_Ty, _Alloc>;
 
     void Serialize(const void* addr, rapidjson::PrettyWriter<rapidjson::StringBuffer>& writer) const override {
         const auto& v = *static_cast<const ValueType*>(addr);
@@ -350,7 +350,7 @@ template<template<class _Kty, class _Ty, class _Pr, class _Alloc> class Containe
     class Type<ISerialization, ContainerType<_Kty, _Ty, _Pr, _Alloc>, std::enable_if_t<std::is_same_v<std::string, _Kty>>>
     : public TypeBase<ISerialization, ContainerType<_Kty, _Ty, _Pr, _Alloc>> {
     public:
-        using typename Type::ValueType;
+        using ValueType = ContainerType<_Kty, _Ty, _Pr, _Alloc>;
 
         void Serialize(const void* addr, rapidjson::PrettyWriter<rapidjson::StringBuffer>& writer) const override {
             _SerializationMapTypeHelper<ValueType>::Serialize(addr, writer);
@@ -366,7 +366,7 @@ template<template <class _Kty, class _Ty, class _Hasher, class _Keyeq, class _Al
     class Type<ISerialization, ContainerType<_Kty, _Ty, _Hasher, _Keyeq, _Alloc>, std::enable_if_t<std::is_same_v<std::string, _Kty>>>
     : public TypeBase<ISerialization, ContainerType<_Kty, _Ty, _Hasher, _Keyeq, _Alloc>> {
     public:
-        using typename Type::ValueType;
+        using ValueType = ContainerType<_Kty, _Ty, _Hasher, _Keyeq, _Alloc>;
 
         void Serialize(const void* addr, rapidjson::PrettyWriter<rapidjson::StringBuffer>& writer) const override {
             _SerializationMapTypeHelper<ValueType>::Serialize(addr, writer);
