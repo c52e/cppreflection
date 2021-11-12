@@ -11,6 +11,11 @@
 
 #include "util.h"
 
+#ifndef FIELD_NOT_FOUND_HANDLE
+#include <iostream>
+#define FIELD_NOT_FOUND_HANDLE(msg) (std::cerr << (msg) << std::endl)
+#endif
+
 namespace reflection {
 
 class ISerialization : public IReflectionBase<ISerialization> {
@@ -156,9 +161,13 @@ public:
                 v.reset(new _Ty());
             for (const auto& [name, fun] : v->GetFieldTable(static_cast<ISerialization*>(nullptr))) {
                 auto itr = value.FindMember(name.c_str());
-                R_ASSERT(itr != value.MemberEnd());
-                auto info = fun(v.get());
-                info.type->Deserialize(info.address, itr->value);
+                if (itr != value.MemberEnd()) {
+                    auto info = fun(v.get());
+                    info.type->Deserialize(info.address, itr->value);
+                }
+                else {
+                    FIELD_NOT_FOUND_HANDLE("Field \"" + name + "\" not found");
+                }
             }
         }
     }
@@ -334,9 +343,13 @@ inline void ISerialization::Deserialize(const rapidjson::Value& value) {
     R_ASSERT(value.IsObject());
     for (const auto& [name, fun] : GetFieldTable()) {
         auto itr = value.FindMember(name.c_str());
-        R_ASSERT(itr != value.MemberEnd());
-        auto info = fun(this);
-        info.type->Deserialize(info.address, itr->value);
+        if (itr != value.MemberEnd()) {
+            auto info = fun(this);
+            info.type->Deserialize(info.address, itr->value);
+        }
+        else {
+            FIELD_NOT_FOUND_HANDLE("Field \"" + name + "\" not found");
+        }
     }
 }
 

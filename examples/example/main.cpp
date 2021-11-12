@@ -11,6 +11,7 @@
 #include <imgui_impl_glfw.h>
 #include <imgui_impl_opengl3.h>
 
+#define FIELD_NOT_FOUND_HANDLE(msg) throw std::runtime_error(msg);
 #include <reflection/serialization.h>
 #include <reflection/autoimgui.h>
 
