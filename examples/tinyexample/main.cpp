@@ -10,7 +10,9 @@
 #include <reflection/serialization.h>
 #include <reflection/autoimgui.h>
 
-using namespace reflection;
+using reflection::ISerialization;
+using reflection::IAutoImGui;
+using reflection::AutoImGuiArg;
 
 class Shape : public ISerialization, public IAutoImGui {
 public:
