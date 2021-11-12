@@ -16,8 +16,10 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "reflection", "reflection", "{FF52DF06-2F70-4364-8BE1-C686E3E6041F}"
 	ProjectSection(SolutionItems) = preProject
 		include\reflection\autoimgui.h = include\reflection\autoimgui.h
+		include\reflection\autoimgui_ext_glm.h = include\reflection\autoimgui_ext_glm.h
 		include\reflection\reflection.h = include\reflection\reflection.h
 		include\reflection\serialization.h = include\reflection\serialization.h
+		include\reflection\serialization_ext_glm.h = include\reflection\serialization_ext_glm.h
 		include\reflection\util.h = include\reflection\util.h
 	EndProjectSection
 EndProject

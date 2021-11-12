@@ -12,8 +12,8 @@
 #include <imgui_impl_opengl3.h>
 
 #define FIELD_NOT_FOUND_HANDLE(msg) throw std::runtime_error(msg);
-#include <reflection/serialization.h>
-#include <reflection/autoimgui.h>
+#include <reflection/serialization_ext_glm.h>
+#include <reflection/autoimgui_ext_glm.h>
 
 class Shape : public reflection::ISerialization, public reflection::IAutoImGui {
 public:
@@ -83,6 +83,8 @@ public:
     std::vector<std::unique_ptr<Shape>> vec;
     std::vector<float> vecf;
     std::array<float[3], 2> mat1x2x3[1];
+    glm::ivec3 glmivec3;
+    glm::mat2x3 glmmat2x3;
     std::unique_ptr<Test> pnext;
 
 FIELD_DECLARATION_BEGIN(Test, ISerialization)
@@ -100,6 +102,8 @@ FIELD_DECLARATION_BEGIN(Test, ISerialization)
     FIELD_DECLARATION("vec", vec)
     FIELD_DECLARATION("vecf", vecf)
     FIELD_DECLARATION("mat1x2x3", mat1x2x3)
+    FIELD_DECLARATION("glmivec3", glmivec3)
+    FIELD_DECLARATION("glmmat2x3", glmmat2x3)
     FIELD_DECLARATION("pnext", pnext)
 FIELD_DECLARATION_END()
 
@@ -116,6 +120,8 @@ FIELD_DECLARATION_BEGIN(Test, IAutoImGui)
     FIELD_DECLARATION("vecf", vecf, { { reflection::AutoImGuiArg::SliderFloatMin, 0.0f }, {reflection::AutoImGuiArg::SliderFloatMax, 1000.0f} })
     FIELD_DECLARATION("map", map)
     FIELD_DECLARATION("mat1x2x3", mat1x2x3)
+    FIELD_DECLARATION("glmivec3", glmivec3)
+    FIELD_DECLARATION("glmmat2x3", glmmat2x3)
     FIELD_DECLARATION("umap", umap)
 FIELD_DECLARATION_END()
 };
@@ -206,6 +212,11 @@ const char* src = R"(
             [1,2,3],
             [4,5,6]
         ]
+    ],
+    "glmivec3": [1,2,3],
+    "glmmat2x3": [
+        [0.25,0.5,0.75],
+        [0.25,0.5,0.75]
     ],
     "pnext": null
 }
