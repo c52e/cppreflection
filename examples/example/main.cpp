@@ -82,6 +82,7 @@ public:
     std::unique_ptr<Shape> shape;
     std::vector<std::unique_ptr<Shape>> vec;
     std::vector<float> vecf;
+    std::array<float[3], 2> mat1x2x3[1];
     std::unique_ptr<Test> pnext;
 
 FIELD_DECLARATION_BEGIN(Test, ISerialization)
@@ -98,6 +99,7 @@ FIELD_DECLARATION_BEGIN(Test, ISerialization)
     FIELD_DECLARATION("shape", shape)
     FIELD_DECLARATION("vec", vec)
     FIELD_DECLARATION("vecf", vecf)
+    FIELD_DECLARATION("mat1x2x3", mat1x2x3)
     FIELD_DECLARATION("pnext", pnext)
 FIELD_DECLARATION_END()
 
@@ -113,6 +115,7 @@ FIELD_DECLARATION_BEGIN(Test, IAutoImGui)
     FIELD_DECLARATION("vec", vec)
     FIELD_DECLARATION("vecf", vecf, { { reflection::AutoImGuiArg::SliderFloatMin, 0.0f }, {reflection::AutoImGuiArg::SliderFloatMax, 1000.0f} })
     FIELD_DECLARATION("map", map)
+    FIELD_DECLARATION("mat1x2x3", mat1x2x3)
     FIELD_DECLARATION("umap", umap)
 FIELD_DECLARATION_END()
 };
@@ -198,24 +201,13 @@ const char* src = R"(
     "vecf": [
         0.5
     ],
-    "pnext": {
-        "b": false,
-        "d": 1.23,
-        "e": "E1",
-        "f": 2.3399999141693115,
-        "i": 889,
-        "li": [],
-        "map": {},
-        "s": "string",
-        "shape": null,
-        "uf": 999.5,
-        "umap": {
-            "ukey": null
-        },
-        "vec": [],
-        "vecf": [],
-        "pnext": null
-    }
+    "mat1x2x3": [
+        [
+            [1,2,3],
+            [4,5,6]
+        ]
+    ],
+    "pnext": null
 }
 )";
 

@@ -29,7 +29,7 @@ Value GetOrDefault(const std::unordered_map<Key, std::any>& m, const Key& key, c
 }
 
 struct ScopeImGuiId {
-	ScopeImGuiId(const char* id) {
+	ScopeImGuiId(int id) {
 		ImGui::PushID(id);
 	}
 	~ScopeImGuiId() {

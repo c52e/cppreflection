@@ -152,6 +152,40 @@ public:
     }
 };
 
+template<class _Ty, size_t _Size>
+struct _AutoImGuiArrayTypeHelper {
+    static void DrawAutoImGui(void* addr, const char* name, const Userdata<IAutoImGui>::Type& userdata) {
+        auto arr = static_cast<_Ty*>(addr);
+
+        if (ScopeImGuiTreeNode tree(name);  tree) {
+            constexpr size_t kBufSize = 128;
+            char buf[kBufSize];
+            for (size_t i = 0; i < _Size; ++i) {
+                snprintf(buf, kBufSize, "%llu", static_cast<unsigned long long>(i));
+                Type<IAutoImGui, _Ty>::GetIType()->DrawAutoImGui(&arr[i], buf, userdata);
+            }
+        }
+    }
+};
+
+template<class _Ty, size_t _Size>
+class Type< IAutoImGui, _Ty[_Size]>
+    : public TypeBase<IAutoImGui, _Ty[_Size]> {
+public:
+    void DrawAutoImGui(void* addr, const char* name, const Userdata<IAutoImGui>::Type& userdata) const override {
+        _AutoImGuiArrayTypeHelper<_Ty, _Size>::DrawAutoImGui(addr, name, userdata);
+    }
+};
+
+template<class _Ty, size_t _Size>
+class Type< IAutoImGui, std::array<_Ty, _Size>>
+    : public TypeBase<IAutoImGui, std::array<_Ty, _Size>> {
+public:
+    void DrawAutoImGui(void* addr, const char* name, const Userdata<IAutoImGui>::Type& userdata) const override {
+        _AutoImGuiArrayTypeHelper<_Ty, _Size>::DrawAutoImGui(addr, name, userdata);
+    }
+};
+
 template<template<class _Ty, class _Alloc> class ContainerType, class _Ty, class _Alloc>
 class Type<IAutoImGui, ContainerType<_Ty, _Alloc>
     , std::enable_if_t<std::is_same_v<ContainerType<_Ty, _Alloc>, std::vector<_Ty, _Alloc>>
@@ -178,18 +212,19 @@ public:
             }
         }
         if (tree && !v.empty()) {
-            char buf[128];
+            constexpr size_t kBufSize = 128;
+            char buf[kBufSize];
             unsigned long long i = 0;
-            sprintf_s(buf, "%llu", i++);
+            snprintf(buf, kBufSize, "%llu", i++);
             Type<IAutoImGui, _Ty>::GetIType()->DrawAutoImGui(&v.front(), buf, userdata);
             for (auto itr = ++v.begin(); itr != v.end(); ++itr) {
-                sprintf_s(buf, "exchange(%llu, %llu)", i - 1, i);
+                snprintf(buf, kBufSize, "exchange(%llu, %llu)", i - 1, i);
                 if (ImGui::Button(buf)) {
                     auto pre = itr; --pre;
                     std::swap(*itr, *pre);
                     break;
                 }
-                sprintf_s(buf, "%llu", i++);
+                snprintf(buf, kBufSize, "%llu", i++);
                 Type<IAutoImGui, _Ty>::GetIType()->DrawAutoImGui(&*itr, buf, userdata);
             }
         }
@@ -219,13 +254,12 @@ struct _AutoImGuiMapTypeHelper {
             
         }
         if (tree) {
-            char buf[128];
-            unsigned long long i = 0;
+            int id = 0;
             for (auto itr = v.begin(); itr != v.end(); ++itr) {
+                ScopeImGuiId _id(id++);
                 auto& [key, value] = *itr;
                 Type<IAutoImGui, _Ty>::GetIType()->DrawAutoImGui(&value, key.c_str(), userdata);
-                sprintf_s(buf, "erase##%llu", i++);
-                if (ImGui::Button(buf)) {
+                if (ImGui::Button("erase")) {
                     v.erase(itr);
                     break;
                 }

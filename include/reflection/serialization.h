@@ -4,6 +4,7 @@
 
 #include <type_traits>
 #include <memory>
+#include <array>
 
 #include <rapidjson/document.h>
 #include <rapidjson/prettywriter.h>
@@ -237,6 +238,53 @@ public:
                 v.reset(new _Ty());
             Type<ISerialization, _Ty>::GetIType()->Deserialize(v.get(), value);
         }
+    }
+};
+
+template<class _Ty, size_t _Size>
+struct _SerializationArrayTypeHelper {
+    static void Serialize(const void* addr, rapidjson::PrettyWriter<rapidjson::StringBuffer>& writer) {
+        const auto arr = static_cast<const _Ty*>(addr);
+        writer.StartArray();
+        for (size_t i = 0; i < _Size; ++i) {
+            Type<ISerialization, _Ty>::GetIType()->Serialize(&arr[i], writer);
+        }
+        writer.EndArray();
+    }
+
+    static void Deserialize(void* addr, const rapidjson::Value& value) {
+        R_ASSERT(value.IsArray());
+        R_ASSERT(value.Size() == _Size);
+        auto arr = static_cast<_Ty*>(addr);
+        for (size_t i = 0; i < _Size; ++i) {
+            Type<ISerialization, _Ty>::GetIType()->Deserialize(&arr[i], value[static_cast<rapidjson::SizeType>(i)]);
+        }
+    }
+};
+
+template<class _Ty, size_t _Size>
+class Type< ISerialization, _Ty[_Size]>
+    : public TypeBase<ISerialization, _Ty[_Size]> {
+public:
+    void Serialize(const void* addr, rapidjson::PrettyWriter<rapidjson::StringBuffer>& writer) const override {
+        _SerializationArrayTypeHelper<_Ty, _Size>::Serialize(addr, writer);
+    }
+
+    void Deserialize(void* addr, const rapidjson::Value& value) const override {
+        _SerializationArrayTypeHelper<_Ty, _Size>::Deserialize(addr, value);
+    }
+};
+
+template<class _Ty, size_t _Size>
+class Type< ISerialization, std::array<_Ty, _Size>>
+    : public TypeBase<ISerialization, std::array<_Ty, _Size>> {
+public:
+    void Serialize(const void* addr, rapidjson::PrettyWriter<rapidjson::StringBuffer>& writer) const override {
+        _SerializationArrayTypeHelper<_Ty, _Size>::Serialize(addr, writer);
+    }
+
+    void Deserialize(void* addr, const rapidjson::Value& value) const override {
+        _SerializationArrayTypeHelper<_Ty, _Size>::Deserialize(addr, value);
     }
 };
 
