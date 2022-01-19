@@ -128,6 +128,39 @@ public:
     }
 };
 
+template<class T>
+class Type<ISerialization, T, std::enable_if_t<std::is_base_of_v<ISerialization, T>>>
+    : public TypeBase<ISerialization, T> {
+public:
+    using ValueType = T;
+
+    void Serialize(const void* addr, rapidjson::PrettyWriter<rapidjson::StringBuffer>& writer) const override {
+        const auto& v = *static_cast<const ValueType*>(addr);
+        writer.StartObject();
+        for (const auto& [name, fun] : v.GetFieldTable(static_cast<ISerialization*>(nullptr))) {
+            writer.String(name.c_str());
+            auto info = fun(const_cast<ValueType*>(&v));
+            info.type->Serialize(info.address, writer);
+        }
+        writer.EndObject();
+    }
+
+    void Deserialize(void* addr, const rapidjson::Value& value) const override {
+        R_ASSERT(value.IsObject());
+        auto& v = *static_cast<ValueType*>(addr);
+        for (const auto& [name, fun] : v.GetFieldTable(static_cast<ISerialization*>(nullptr))) {
+            auto itr = value.FindMember(name.c_str());
+            if (itr != value.MemberEnd()) {
+                auto info = fun(&v);
+                info.type->Deserialize(info.address, itr->value);
+            }
+            else {
+                FIELD_NOT_FOUND_HANDLE("Field \"" + name + "\" not found");
+            }
+        }
+    }
+};
+
 template<class _Ty, class _Dx>
 class Type<ISerialization, std::unique_ptr<_Ty, _Dx>, std::enable_if_t<std::is_base_of_v<ISerialization, _Ty> && !SubclassInfo<_Ty>::has>>
     : public TypeBase<ISerialization, std::unique_ptr<_Ty, _Dx>> {

@@ -104,6 +104,23 @@ private:
     std::array<std::string, magic_enum::enum_count<T>()> enums;
 };
 
+template<class T>
+class Type<IAutoImGui, T, std::enable_if_t<std::is_base_of_v<IAutoImGui, T>>>
+    : public TypeBase<IAutoImGui, T> {
+public:
+    using ValueType = T;
+
+    void DrawAutoImGui(void* addr, const char* name, const Userdata<IAutoImGui>::Type& userdata) const override {
+        auto& v = *static_cast<ValueType*>(addr);
+        if (ScopeImGuiTreeNode tree(name); tree) {
+            for (const auto& [name, fun] : v.GetFieldTable(static_cast<IAutoImGui*>(nullptr))) {
+                auto info = fun(&v);
+                info.type->DrawAutoImGui(info.address, name.c_str(), info.userdata);
+            }
+        }
+    }
+};
+
 template<class _Ty, class _Dx>
 class Type<IAutoImGui, std::unique_ptr<_Ty, _Dx>> : public TypeBase<IAutoImGui, std::unique_ptr<_Ty, _Dx>> {
 public:

@@ -89,6 +89,7 @@ public:
     std::array<float[3], 2> mat1x2x3[1];
     glm::ivec3 glmivec3;
     glm::mat2x3 glmmat2x3;
+    Rectangle rectangle;
     std::unique_ptr<Test> pnext;
 
 FIELD_DECLARATION_BEGIN(Test, ISerialization)
@@ -108,6 +109,7 @@ FIELD_DECLARATION_BEGIN(Test, ISerialization)
     FIELD_DECLARATION("mat1x2x3", mat1x2x3)
     FIELD_DECLARATION("glmivec3", glmivec3)
     FIELD_DECLARATION("glmmat2x3", glmmat2x3)
+    FIELD_DECLARATION("rectangle", rectangle)
     FIELD_DECLARATION("pnext", pnext)
 FIELD_DECLARATION_END()
 
@@ -126,6 +128,7 @@ FIELD_DECLARATION_BEGIN(Test, IAutoImGui)
     FIELD_DECLARATION("mat1x2x3", mat1x2x3)
     FIELD_DECLARATION("glmivec3", glmivec3)
     FIELD_DECLARATION("glmmat2x3", glmmat2x3)
+    FIELD_DECLARATION("rectangle", rectangle)
     FIELD_DECLARATION("umap", umap)
 FIELD_DECLARATION_END()
 };
@@ -222,6 +225,10 @@ const char* src = R"(
         [0.25,0.5,0.75],
         [0.25,0.5,0.75]
     ],
+    "rectangle": {
+        "w": 1.0,
+        "h": 4
+    },
     "pnext": null
 }
 )";
