@@ -12,11 +12,11 @@ public:
     std::vector<std::unique_ptr<Shape>> data;
 
 FIELD_DECLARATION_BEGIN(Shapes, ISerialization)
-    FIELD_DECLARATION("data", data)
+    DECLARE(data)
 FIELD_DECLARATION_END()
 
 FIELD_DECLARATION_BEGIN(Shapes, IAutoImGui)
-    FIELD_DECLARATION("data", data)
+    DECLARE(data)
 FIELD_DECLARATION_END()
 };
 ```
@@ -32,11 +32,11 @@ public:
     float radius{};
 
 FIELD_DECLARATION_BEGIN(Circle, ISerialization)
-    FIELD_DECLARATION("radius", radius)
+    DECLARE(radius)
 FIELD_DECLARATION_END()
 
 FIELD_DECLARATION_BEGIN(Circle, IAutoImGui)
-    FIELD_DECLARATION("radius", radius, d.Min = 0.0f, d.Max = 100.0f)
+    DECLARE(radius, d.Min = 0.0f, d.Max = 100.0f)
 FIELD_DECLARATION_END()
 };
 
@@ -46,13 +46,13 @@ public:
     float height{};
 
 FIELD_DECLARATION_BEGIN(Rectangle, ISerialization)
-    FIELD_DECLARATION("width", width)
-    FIELD_DECLARATION("height", height)
+    DECLARE(width)
+    DECLARE(height)
 FIELD_DECLARATION_END()
 
 FIELD_DECLARATION_BEGIN(Rectangle, IAutoImGui)
-    FIELD_DECLARATION("width", width, d.Min = 0.0f, d.Max = 200.0f)
-    FIELD_DECLARATION("height", height, d.Min = 0.0f, d.Max = 200.0f)
+    DECLARE(width, d.Min = 0.0f, d.Max = 200.0f)
+    DECLARE(height, d.Min = 0.0f, d.Max = 200.0f)
 FIELD_DECLARATION_END()
 };
 
