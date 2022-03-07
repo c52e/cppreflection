@@ -10,7 +10,7 @@ template<glm::length_t L, typename T, glm::qualifier Q>
 class Type<IAutoImGui, glm::vec<L, T, Q>>
     : public TypeBase<IAutoImGui, glm::vec<L, T, Q>> {
 public:
-    void DrawAutoImGui(void* addr, const char* name, const Userdata<IAutoImGui>::Type& userdata) const override {
+    void DrawAutoImGui(void* addr, const char* name, const UserdataBase* userdata) const override {
         _AutoImGuiArrayTypeHelper<T, L>::DrawAutoImGui(addr, name, userdata);
     }
 };
@@ -22,7 +22,7 @@ public:
     using ValueType = glm::mat<C, R, T, Q>;
     using LineT = typename ValueType::col_type;
 
-    void DrawAutoImGui(void* addr, const char* name, const Userdata<IAutoImGui>::Type& userdata) const override {
+    void DrawAutoImGui(void* addr, const char* name, const UserdataBase* userdata) const override {
         _AutoImGuiArrayTypeHelper<LineT, ValueType::length()>::DrawAutoImGui(addr, name, userdata);
     }
 };

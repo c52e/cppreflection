@@ -75,7 +75,7 @@
       <PreprocessorDefinitions>PI=3.14159265358979323846;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>$(SolutionDir)external\glad\include;$(SolutionDir)external\glfw\include;$(SolutionDir)external\imgui\include;$(SolutionDir)external\magic_enum\include;$(SolutionDir)external\rapidjson\include;$(SolutionDir)external\glm;$(SolutionDir)include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <LanguageStandard>stdcpp17</LanguageStandard>
+      <LanguageStandard>stdcpp20</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -92,7 +92,7 @@
       <PreprocessorDefinitions>PI=3.14159265358979323846;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>$(SolutionDir)external\glad\include;$(SolutionDir)external\glfw\include;$(SolutionDir)external\imgui\include;$(SolutionDir)external\magic_enum\include;$(SolutionDir)external\rapidjson\include;$(SolutionDir)external\glm;$(SolutionDir)include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <LanguageStandard>stdcpp17</LanguageStandard>
+      <LanguageStandard>stdcpp20</LanguageStandard>
       <EnableEnhancedInstructionSet>AdvancedVectorExtensions2</EnableEnhancedInstructionSet>
       <FloatingPointModel>Fast</FloatingPointModel>
     </ClCompile>

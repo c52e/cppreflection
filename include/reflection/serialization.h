@@ -5,6 +5,10 @@
 #include <type_traits>
 #include <memory>
 #include <array>
+#include <vector>
+#include <list>
+#include <map>
+#include <unordered_map>
 
 #include <rapidjson/document.h>
 #include <rapidjson/prettywriter.h>
@@ -137,7 +141,7 @@ public:
     void Serialize(const void* addr, rapidjson::PrettyWriter<rapidjson::StringBuffer>& writer) const override {
         const auto& v = *static_cast<const ValueType*>(addr);
         writer.StartObject();
-        for (const auto& [name, fun] : v.GetFieldTable(static_cast<ISerialization*>(nullptr))) {
+        for (const auto& [name, fun] : static_cast<const ISerialization&>(v).GetFieldTable()) {
             writer.String(name.c_str());
             auto info = fun(const_cast<ValueType*>(&v));
             info.type->Serialize(info.address, writer);
@@ -148,7 +152,7 @@ public:
     void Deserialize(void* addr, const rapidjson::Value& value) const override {
         R_ASSERT(value.IsObject());
         auto& v = *static_cast<ValueType*>(addr);
-        for (const auto& [name, fun] : v.GetFieldTable(static_cast<ISerialization*>(nullptr))) {
+        for (const auto& [name, fun] : static_cast<const ISerialization&>(v).GetFieldTable()) {
             auto itr = value.FindMember(name.c_str());
             if (itr != value.MemberEnd()) {
                 auto info = fun(&v);
@@ -193,7 +197,7 @@ public:
             R_ASSERT(value.IsObject());
             if (v == nullptr)
                 v.reset(new _Ty());
-            for (const auto& [name, fun] : v->GetFieldTable(static_cast<ISerialization*>(nullptr))) {
+            for (const auto& [name, fun] : static_cast<ISerialization*>(v.get())->GetFieldTable()) {
                 auto itr = value.FindMember(name.c_str());
                 if (itr != value.MemberEnd()) {
                     auto info = fun(v.get());

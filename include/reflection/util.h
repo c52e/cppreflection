@@ -1,8 +1,6 @@
 #pragma once
 
 #include <stdexcept>
-#include <unordered_map>
-#include <any>
 
 #include <magic_enum.hpp>
 #include <imgui.h>
@@ -19,13 +17,6 @@ constexpr size_t MaxEnumStringViewSize() {
 		maxsize = maxsize < strview.size() ? strview.size() : maxsize;
 	}
 	return maxsize;
-}
-
-template<class Key, class Value>
-Value GetOrDefault(const std::unordered_map<Key, std::any>& m, const Key& key, const Value& default_value) {
-	auto itr = m.find(key);
-	R_ASSERT(itr == m.end() || itr->second.type() == typeid(Value));
-	return itr == m.end() ? default_value : std::any_cast<Value>(itr->second);
 }
 
 struct ScopeImGuiId {

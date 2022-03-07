@@ -1,9 +1,7 @@
 #pragma once
 
 #include <map>
-#include <unordered_map>
 #include <string>
-#include <any>
 
 // Declare in class declaration
 #define FIELD_DECLARATION_BEGIN(classname, interfacename)                         \
@@ -15,12 +13,13 @@
 
 #define FIELD_DECLARATION(name, field, ...)                                       \
     { name, [](InterfaceType* arg) {                                              \
-        static reflection::Userdata<InterfaceType>::Type userdata __VA_ARGS__;    \
         auto p = static_cast<Class*>(arg);                                        \
+        using T = decltype(p->field);                                             \
+        static reflection::Type<InterfaceType, T>::Userdata userdata{__VA_ARGS__};\
         return reflection::IReflectionBase<InterfaceType>::FieldInfo {            \
             static_cast<void*>(&(p->field)),                                      \
-            reflection::Type<InterfaceType, decltype(p->field)>::GetIType(),      \
-            userdata }; }},
+            reflection::Type<InterfaceType, T>::GetIType(),                       \
+            static_cast<reflection::UserdataBase*>(&userdata) }; }},
 
 #define FIELD_DECLARATION_END() }; return m; }
 
@@ -49,11 +48,7 @@ namespace reflection {
 template<class I>
 class IType;
 
-template <class I>
-struct Userdata {
-    // Default userdata type
-    using Type = std::unordered_map<int, std::any>;
-};
+struct UserdataBase {};
 
 template <class I>
 class IReflectionBase {
@@ -61,7 +56,7 @@ public:
     struct FieldInfo {
         void* address;
         const IType<I>* type;
-        const typename Userdata<I>::Type& userdata;
+        const UserdataBase* userdata;
     };
 
     using GetFieldFunc = FieldInfo(*) (I*);
@@ -80,6 +75,8 @@ template<class I, class T>
 class TypeBase : public IType<I> {
 public:
     using ValueType = T;
+
+    struct Userdata : UserdataBase {};
 
     static const IType<I>* GetIType() {
         static const Type<I, T> instance;

@@ -5,6 +5,10 @@
 #include <type_traits>
 #include <memory>
 #include <array>
+#include <vector>
+#include <list>
+#include <map>
+#include <unordered_map>
 
 #include <imgui.h>
 #include <magic_enum.hpp>
@@ -18,42 +22,31 @@ public:
     void DrawAutoImGui();
 };
 
-enum class AutoImGuiArg {
-    SliderIntMin,
-    SliderIntMax,
-    SliderFloatMin,
-    SliderFloatMax
-};
-
-template<>
-struct Userdata<IAutoImGui> {
-    using Type = std::unordered_map<AutoImGuiArg, std::any>;
-};
-
 template<>
 class IType<IAutoImGui> {
 public:
-    virtual void DrawAutoImGui(void* addr, const char* name, const Userdata<IAutoImGui>::Type& userdata) const = 0;
+    virtual void DrawAutoImGui(void* addr, const char* name, const UserdataBase* userdata) const = 0;
 };
 
 template<>
 class Type<IAutoImGui, int> : public TypeBase<IAutoImGui, int> {
 public:
-    static constexpr ValueType kDefaultVMin = 0;
-    static constexpr ValueType kDefaultVMax = 10;
+    struct Userdata : UserdataBase {
+        int Min = 0;
+        int Max = 10;
+    };
 
-    void DrawAutoImGui(void* addr, const char* name, const Userdata<IAutoImGui>::Type& userdata) const override {
+    void DrawAutoImGui(void* addr, const char* name, const UserdataBase* userdata) const override {
         auto p = static_cast<ValueType*>(addr);
-        auto vmin = GetOrDefault(userdata, AutoImGuiArg::SliderIntMin, kDefaultVMin);
-        auto vmax = GetOrDefault(userdata, AutoImGuiArg::SliderIntMax, kDefaultVMax);
-        ImGui::SliderInt(name, p, vmin, vmax);
+        auto arg = static_cast<const Userdata*>(userdata);
+        ImGui::SliderInt(name, p, arg->Min, arg->Max);
     }
 };
 
 template<>
 class Type<IAutoImGui, bool> : public TypeBase<IAutoImGui, bool> {
 public:
-    void DrawAutoImGui(void* addr, const char* name, const Userdata<IAutoImGui>::Type& userdata) const override {
+    void DrawAutoImGui(void* addr, const char* name, const UserdataBase* userdata) const override {
         auto p = static_cast<ValueType*>(addr);
         ImGui::Checkbox(name, p);
     }
@@ -62,14 +55,15 @@ public:
 template<>
 class Type<IAutoImGui, float> : public TypeBase<IAutoImGui, float> {
 public:
-    static constexpr ValueType kDefaultVMin = 0.0f;
-    static constexpr ValueType kDefaultVMax = 1.0f;
+    struct Userdata : UserdataBase {
+        float Min = 0.0f;
+        float Max = 1.0f;
+    };
 
-    void DrawAutoImGui(void* addr, const char* name, const Userdata<IAutoImGui>::Type& userdata) const override {
+    void DrawAutoImGui(void* addr, const char* name, const UserdataBase* userdata) const override {
         auto p = static_cast<ValueType*>(addr);
-        auto vmin = GetOrDefault(userdata, AutoImGuiArg::SliderFloatMin, kDefaultVMin);
-        auto vmax = GetOrDefault(userdata, AutoImGuiArg::SliderFloatMax, kDefaultVMax);
-        ImGui::SliderFloat(name, p, vmin, vmax);
+        auto arg = static_cast<const Userdata*>(userdata);
+        ImGui::SliderFloat(name, p, arg->Min, arg->Max);
     }
 };
 
@@ -84,7 +78,7 @@ public:
             *i++ = *j++;
     }
 
-    void DrawAutoImGui(void* addr, const char* name, const Userdata<IAutoImGui>::Type& userdata) const override {
+    void DrawAutoImGui(void* addr, const char* name, const UserdataBase* userdata) const override {
         auto p = static_cast<T*>(addr);
         char buf[MaxEnumStringViewSize<T>() + 1];
         auto curstrview = magic_enum::enum_name(*p);
@@ -110,10 +104,10 @@ class Type<IAutoImGui, T, std::enable_if_t<std::is_base_of_v<IAutoImGui, T>>>
 public:
     using ValueType = T;
 
-    void DrawAutoImGui(void* addr, const char* name, const Userdata<IAutoImGui>::Type& userdata) const override {
+    void DrawAutoImGui(void* addr, const char* name, const UserdataBase* userdata) const override {
         auto& v = *static_cast<ValueType*>(addr);
         if (ScopeImGuiTreeNode tree(name); tree) {
-            for (const auto& [name, fun] : v.GetFieldTable(static_cast<IAutoImGui*>(nullptr))) {
+            for (const auto& [name, fun] : static_cast<const IAutoImGui&>(v).GetFieldTable()) {
                 auto info = fun(&v);
                 info.type->DrawAutoImGui(info.address, name.c_str(), info.userdata);
             }
@@ -126,7 +120,9 @@ class Type<IAutoImGui, std::unique_ptr<_Ty, _Dx>> : public TypeBase<IAutoImGui, 
 public:
     using ValueType = std::unique_ptr<_Ty, _Dx>;
 
-    void DrawAutoImGui(void* addr, const char* name, const Userdata<IAutoImGui>::Type& userdata) const override {
+    struct Userdata : Type< IAutoImGui, _Ty>::Userdata {};
+
+    void DrawAutoImGui(void* addr, const char* name, const UserdataBase* userdata) const override {
         auto& v = *static_cast<ValueType*>(addr);
 
         if (v) {
@@ -171,7 +167,7 @@ public:
 
 template<class _Ty, size_t _Size>
 struct _AutoImGuiArrayTypeHelper {
-    static void DrawAutoImGui(void* addr, const char* name, const Userdata<IAutoImGui>::Type& userdata) {
+    static void DrawAutoImGui(void* addr, const char* name, const UserdataBase* userdata) {
         auto arr = static_cast<_Ty*>(addr);
 
         if (ScopeImGuiTreeNode tree(name);  tree) {
@@ -189,7 +185,9 @@ template<class _Ty, size_t _Size>
 class Type< IAutoImGui, _Ty[_Size]>
     : public TypeBase<IAutoImGui, _Ty[_Size]> {
 public:
-    void DrawAutoImGui(void* addr, const char* name, const Userdata<IAutoImGui>::Type& userdata) const override {
+    struct Userdata : Type< IAutoImGui, _Ty>::Userdata {};
+
+    void DrawAutoImGui(void* addr, const char* name, const UserdataBase* userdata) const override {
         _AutoImGuiArrayTypeHelper<_Ty, _Size>::DrawAutoImGui(addr, name, userdata);
     }
 };
@@ -198,7 +196,9 @@ template<class _Ty, size_t _Size>
 class Type< IAutoImGui, std::array<_Ty, _Size>>
     : public TypeBase<IAutoImGui, std::array<_Ty, _Size>> {
 public:
-    void DrawAutoImGui(void* addr, const char* name, const Userdata<IAutoImGui>::Type& userdata) const override {
+    struct Userdata : Type< IAutoImGui, _Ty>::Userdata {};
+
+    void DrawAutoImGui(void* addr, const char* name, const UserdataBase* userdata) const override {
         _AutoImGuiArrayTypeHelper<_Ty, _Size>::DrawAutoImGui(addr, name, userdata);
     }
 };
@@ -211,7 +211,9 @@ class Type<IAutoImGui, ContainerType<_Ty, _Alloc>
 public:
     using ValueType = ContainerType<_Ty, _Alloc>;
 
-    void DrawAutoImGui(void* addr, const char* name, const Userdata<IAutoImGui>::Type& userdata) const override {
+    struct Userdata : Type< IAutoImGui, _Ty>::Userdata {};
+
+    void DrawAutoImGui(void* addr, const char* name, const UserdataBase* userdata) const override {
         auto& v = *static_cast<ValueType*>(addr);
 
         ScopeImGuiTreeNode tree(name);
@@ -252,7 +254,7 @@ template<class T>
 struct _AutoImGuiMapTypeHelper {
     using _Ty = typename T::mapped_type;
 
-    static void DrawAutoImGui(void* addr, const char* name, const Userdata<IAutoImGui>::Type& userdata) {
+    static void DrawAutoImGui(void* addr, const char* name, const UserdataBase* userdata) {
         auto& v = *static_cast<T*>(addr);
 
         ScopeImGuiTreeNode tree(name);
@@ -292,7 +294,9 @@ template<template<class _Kty, class _Ty, class _Pr, class _Alloc> class Containe
     public:
         using ValueType = ContainerType<_Kty, _Ty, _Pr, _Alloc>;
 
-        void DrawAutoImGui(void* addr, const char* name, const Userdata<IAutoImGui>::Type& userdata) const override {
+        struct Userdata : Type< IAutoImGui, _Ty>::Userdata {};
+
+        void DrawAutoImGui(void* addr, const char* name, const UserdataBase* userdata) const override {
             _AutoImGuiMapTypeHelper<ValueType>::DrawAutoImGui(addr, name, userdata);
         }
 };
@@ -304,7 +308,9 @@ template<template <class _Kty, class _Ty, class _Hasher, class _Keyeq, class _Al
     public:
         using ValueType = ContainerType<_Kty, _Ty, _Hasher, _Keyeq, _Alloc>;
 
-        void DrawAutoImGui(void* addr, const char* name, const Userdata<IAutoImGui>::Type& userdata) const override {
+        struct Userdata : Type< IAutoImGui, _Ty>::Userdata {};
+
+        void DrawAutoImGui(void* addr, const char* name, const UserdataBase* userdata) const override {
             _AutoImGuiMapTypeHelper<ValueType>::DrawAutoImGui(addr, name, userdata);
         }
 };

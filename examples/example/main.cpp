@@ -17,7 +17,6 @@
 
 using reflection::ISerialization;
 using reflection::IAutoImGui;
-using reflection::AutoImGuiArg;
 
 class Shape : public ISerialization, public IAutoImGui {
 public:
@@ -32,7 +31,7 @@ FIELD_DECLARATION_BEGIN(Circle, ISerialization)
     FIELD_DECLARATION("r", r)
 FIELD_DECLARATION_END()
 FIELD_DECLARATION_BEGIN(Circle, IAutoImGui)
-    FIELD_DECLARATION("r", r, { { AutoImGuiArg::SliderFloatMin, 0.0f }, {AutoImGuiArg::SliderFloatMax, 100.0f} })
+    FIELD_DECLARATION("r", r, .Min = 0.0f, .Max = 100.0f)
 FIELD_DECLARATION_END()
 };
 
@@ -115,15 +114,15 @@ FIELD_DECLARATION_END()
 
 FIELD_DECLARATION_BEGIN(Test, IAutoImGui)
     FIELD_DECLARATION("e", e)
-    FIELD_DECLARATION("i", i, { { AutoImGuiArg::SliderIntMin, -100 }, {AutoImGuiArg::SliderIntMax, 100} })
+    FIELD_DECLARATION("i", i, .Min = -100, .Max = 100)
     FIELD_DECLARATION("b", b)
-    FIELD_DECLARATION("f", f, { { AutoImGuiArg::SliderFloatMin, -10.0f }, {AutoImGuiArg::SliderFloatMax, 10.0f} })
+    FIELD_DECLARATION("f", f, .Min = -10.0f, .Max = 10.0f)
     FIELD_DECLARATION("uf", uf)
     FIELD_DECLARATION("li", li)
     FIELD_DECLARATION("shape", shape)
     FIELD_DECLARATION("pnext", pnext)
     FIELD_DECLARATION("vec", vec)
-    FIELD_DECLARATION("vecf", vecf, { { AutoImGuiArg::SliderFloatMin, 0.0f }, {AutoImGuiArg::SliderFloatMax, 1000.0f} })
+    FIELD_DECLARATION("vecf", vecf, { .Min = 0.0f, .Max = 1000.0f })
     FIELD_DECLARATION("map", map)
     FIELD_DECLARATION("mat1x2x3", mat1x2x3)
     FIELD_DECLARATION("glmivec3", glmivec3)
