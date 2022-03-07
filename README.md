@@ -36,7 +36,7 @@ FIELD_DECLARATION_BEGIN(Circle, ISerialization)
 FIELD_DECLARATION_END()
 
 FIELD_DECLARATION_BEGIN(Circle, IAutoImGui)
-    FIELD_DECLARATION("radius", radius, { { AutoImGuiArg::SliderFloatMin, 0.0f }, {AutoImGuiArg::SliderFloatMax, 100.0f} })
+    FIELD_DECLARATION("radius", radius, .Min = 0.0f, .Max = 100.0f)
 FIELD_DECLARATION_END()
 };
 
@@ -51,8 +51,8 @@ FIELD_DECLARATION_BEGIN(Rectangle, ISerialization)
 FIELD_DECLARATION_END()
 
 FIELD_DECLARATION_BEGIN(Rectangle, IAutoImGui)
-    FIELD_DECLARATION("width", width, { { AutoImGuiArg::SliderFloatMin, 0.0f }, {AutoImGuiArg::SliderFloatMax, 200.0f} })
-    FIELD_DECLARATION("height", height, { { AutoImGuiArg::SliderFloatMin, 0.0f }, {AutoImGuiArg::SliderFloatMax, 200.0f} })
+    FIELD_DECLARATION("width", width, .Min = 0.0f, .Max = 200.0f)
+    FIELD_DECLARATION("height", height, .Min = 0.0f, .Max = 200.0f)
 FIELD_DECLARATION_END()
 };
 
