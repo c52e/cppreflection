@@ -15,11 +15,12 @@
     { name, [](InterfaceType* arg) {                                              \
         auto p = static_cast<Class*>(arg);                                        \
         using T = decltype(p->field);                                             \
-        static reflection::Type<InterfaceType, T>::Userdata userdata{__VA_ARGS__};\
+        static reflection::Type<InterfaceType, T>::Userdata d;                    \
+        __VA_ARGS__;                                                              \
         return reflection::IReflectionBase<InterfaceType>::FieldInfo {            \
             static_cast<void*>(&(p->field)),                                      \
             reflection::Type<InterfaceType, T>::GetIType(),                       \
-            static_cast<reflection::UserdataBase*>(&userdata) }; }},
+            static_cast<reflection::UserdataBase*>(&d) }; }},
 
 #define FIELD_DECLARATION_END() }; return m; }
 

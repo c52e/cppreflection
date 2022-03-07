@@ -27,7 +27,7 @@ FIELD_DECLARATION_BEGIN(Circle, ISerialization)
 FIELD_DECLARATION_END()
 
 FIELD_DECLARATION_BEGIN(Circle, IAutoImGui)
-    FIELD_DECLARATION("radius", radius, .Min = 0.0f, .Max = 100.0f)
+    FIELD_DECLARATION("radius", radius, d.Min = 0.0f, d.Max = 100.0f)
 FIELD_DECLARATION_END()
 };
 
@@ -42,8 +42,8 @@ FIELD_DECLARATION_BEGIN(Rectangle, ISerialization)
 FIELD_DECLARATION_END()
 
 FIELD_DECLARATION_BEGIN(Rectangle, IAutoImGui)
-    FIELD_DECLARATION("width", width, .Min = 0.0f, .Max = 200.0f)
-    FIELD_DECLARATION("height", height, .Min = 0.0f, .Max = 200.0f)
+    FIELD_DECLARATION("width", width, d.Min = 0.0f, d.Max = 200.0f)
+    FIELD_DECLARATION("height", height, d.Min = 0.0f, d.Max = 200.0f)
 FIELD_DECLARATION_END()
 };
 
