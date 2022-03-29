@@ -174,7 +174,7 @@ struct _AutoImGuiArrayTypeHelper {
             constexpr size_t kBufSize = 128;
             char buf[kBufSize];
             for (size_t i = 0; i < _Size; ++i) {
-                snprintf(buf, kBufSize, "%llu", static_cast<unsigned long long>(i));
+                snprintf(buf, kBufSize, "%zu", i);
                 Type<IAutoImGui, _Ty>::GetIType()->DrawAutoImGui(&arr[i], buf, userdata);
             }
         }
@@ -233,17 +233,17 @@ public:
         if (tree && !v.empty()) {
             constexpr size_t kBufSize = 128;
             char buf[kBufSize];
-            unsigned long long i = 0;
-            snprintf(buf, kBufSize, "%llu", i++);
+            size_t i = 0;
+            snprintf(buf, kBufSize, "%zu", i++);
             Type<IAutoImGui, _Ty>::GetIType()->DrawAutoImGui(&v.front(), buf, userdata);
             for (auto itr = ++v.begin(); itr != v.end(); ++itr) {
-                snprintf(buf, kBufSize, "exchange(%llu, %llu)", i - 1, i);
+                snprintf(buf, kBufSize, "exchange(%zu, %zu)", i - 1, i);
                 if (ImGui::Button(buf)) {
                     auto pre = itr; --pre;
                     std::swap(*itr, *pre);
                     break;
                 }
-                snprintf(buf, kBufSize, "%llu", i++);
+                snprintf(buf, kBufSize, "%zu", i++);
                 Type<IAutoImGui, _Ty>::GetIType()->DrawAutoImGui(&*itr, buf, userdata);
             }
         }
