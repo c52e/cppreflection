@@ -133,15 +133,7 @@ public:
                 }
             }
             if (tree && v != nullptr) {
-                if constexpr (std::is_base_of_v<IAutoImGui, _Ty>) {
-                    for (const auto& [name, fun] : static_cast<IAutoImGui*>(v.get())->GetFieldTable()) {
-                        auto info = fun(v.get());
-                        info.type->DrawAutoImGui(info.address, name.c_str(), info.userdata);
-                    }
-                }
-                else {
-                    Type<IAutoImGui, _Ty>::GetIType()->DrawAutoImGui(v.get(), "value", userdata);
-                }
+                Type<IAutoImGui, _Ty>::GetIType()->DrawAutoImGui(v.get(), "value", userdata);
             }
         }
         else {
