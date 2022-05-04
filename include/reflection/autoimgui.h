@@ -2,7 +2,6 @@
 
 #include "reflection.h"
 
-#include <type_traits>
 #include <memory>
 #include <array>
 #include <vector>

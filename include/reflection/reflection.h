@@ -1,13 +1,14 @@
 #pragma once
 
+#include <type_traits>
 #include <map>
 #include <string>
 
-// Declare in class declaration
-#define FIELD_DECLARATION_BEGIN(classname, interfacename)                         \
+// Declare in class definition
+#define FIELD_DECLARATION_BEGIN(interfacename)                                    \
     const reflection::IReflectionBase<interfacename>::FieldTable& GetFieldTable(  \
             interfacename* = nullptr) const override {                            \
-        using Class = classname;                                                  \
+        using Class = std::decay_t<decltype(*this)>;                              \
         using InterfaceType = interfacename;                                      \
         static const reflection::IReflectionBase<InterfaceType>::FieldTable m{
 
@@ -25,7 +26,7 @@
 #define FIELD_DECLARATION_END() }; return m; }
 
 
-// Declare out of class declaration
+// Declare out of class definition
 // Subclass header should be included
 #define SUBCLASS_DECLARATION_BEGIN(classname)                    \
     template<>                                                   \

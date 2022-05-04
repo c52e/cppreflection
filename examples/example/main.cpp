@@ -27,10 +27,10 @@ class Circle : public Shape {
 public:
     float r{};
 
-FIELD_DECLARATION_BEGIN(Circle, ISerialization)
+FIELD_DECLARATION_BEGIN(ISerialization)
     FIELD_DECLARATION("r", r)
 FIELD_DECLARATION_END()
-FIELD_DECLARATION_BEGIN(Circle, IAutoImGui)
+FIELD_DECLARATION_BEGIN(IAutoImGui)
     FIELD_DECLARATION("r", r, d.Min = 0.0f, d.Max = 100.0f)
 FIELD_DECLARATION_END()
 };
@@ -40,11 +40,11 @@ public:
     float w{};
     float h{};
 
-FIELD_DECLARATION_BEGIN(Rectangle, ISerialization)
+FIELD_DECLARATION_BEGIN(ISerialization)
     FIELD_DECLARATION("w", w)
     FIELD_DECLARATION("h", h)
 FIELD_DECLARATION_END()
-FIELD_DECLARATION_BEGIN(Rectangle, IAutoImGui)
+FIELD_DECLARATION_BEGIN(IAutoImGui)
     FIELD_DECLARATION("w", w)
     FIELD_DECLARATION("h", h)
 FIELD_DECLARATION_END()
@@ -91,7 +91,7 @@ public:
     Rectangle rectangle;
     std::unique_ptr<Test> pnext;
 
-FIELD_DECLARATION_BEGIN(Test, ISerialization)
+FIELD_DECLARATION_BEGIN(ISerialization)
     FIELD_DECLARATION("e", e)
     FIELD_DECLARATION("i", i)
     FIELD_DECLARATION("b", b)
@@ -112,7 +112,7 @@ FIELD_DECLARATION_BEGIN(Test, ISerialization)
     FIELD_DECLARATION("pnext", pnext)
 FIELD_DECLARATION_END()
 
-FIELD_DECLARATION_BEGIN(Test, IAutoImGui)
+FIELD_DECLARATION_BEGIN(IAutoImGui)
     FIELD_DECLARATION("e", e)
     FIELD_DECLARATION("i", i, d.Min = -100, d.Max = 100)
     FIELD_DECLARATION("b", b)
