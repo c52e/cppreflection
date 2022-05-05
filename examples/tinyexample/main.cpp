@@ -20,6 +20,8 @@ public:
     virtual ~Shape() {};
 };
 
+HAS_SUBCLASS(Shape)
+
 class Circle : public Shape {
 public:
     float radius{};

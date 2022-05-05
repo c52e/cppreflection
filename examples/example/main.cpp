@@ -11,49 +11,9 @@
 #include <imgui_impl_glfw.h>
 #include <imgui_impl_opengl3.h>
 
-#define FIELD_NOT_FOUND_HANDLE(msg) throw std::runtime_error(msg);
-#include <reflection/serialization_ext_glm.h>
-#include <reflection/autoimgui_ext_glm.h>
-
-using reflection::ISerialization;
-using reflection::IAutoImGui;
-
-class Shape : public ISerialization, public IAutoImGui {
-public:
-    virtual ~Shape() {};
-};
-
-class Circle : public Shape {
-public:
-    float r{};
-
-FIELD_DECLARATION_BEGIN(ISerialization)
-    FIELD_DECLARATION("r", r)
-FIELD_DECLARATION_END()
-FIELD_DECLARATION_BEGIN(IAutoImGui)
-    FIELD_DECLARATION("r", r, d.Min = 0.0f, d.Max = 100.0f)
-FIELD_DECLARATION_END()
-};
-
-class Rectangle : public Shape {
-public:
-    float w{};
-    float h{};
-
-FIELD_DECLARATION_BEGIN(ISerialization)
-    FIELD_DECLARATION("w", w)
-    FIELD_DECLARATION("h", h)
-FIELD_DECLARATION_END()
-FIELD_DECLARATION_BEGIN(IAutoImGui)
-    FIELD_DECLARATION("w", w)
-    FIELD_DECLARATION("h", h)
-FIELD_DECLARATION_END()
-};
-
-SUBCLASS_DECLARATION_BEGIN(Shape)
-    SUBCLASS_DECLARATION(Circle)
-    SUBCLASS_DECLARATION(Rectangle)
-SUBCLASS_DECLARATION_END()
+#include "reflection_common.h"
+#include "Circle.h"
+#include "Rectangle.h"
 
 enum class Enum {
     E1, E2

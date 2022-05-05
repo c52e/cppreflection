@@ -25,24 +25,29 @@
 
 #define FIELD_DECLARATION_END() }; return m; }
 
-
-// Declare out of class definition
-// Subclass header should be included
-#define SUBCLASS_DECLARATION_BEGIN(classname)                    \
+// Declare in base class header file (after class definition)
+#define HAS_SUBCLASS(classname)                                  \
     template<>                                                   \
     struct reflection::SubclassInfo<classname> {                 \
         using Class = classname;                                 \
         using FactoryFunc = Class * (*) ();                      \
         using FactoryTable = std::map<std::string, FactoryFunc>; \
         static constexpr bool has = true;                        \
-        static const FactoryTable& GetFactoryTable() {           \
+        static const FactoryTable& GetFactoryTable();            \
+    };
+
+// Declare in base class cpp file
+// Subclass header should be included
+#define SUBCLASS_DECLARATION_BEGIN(classname)                    \
+    const reflection::SubclassInfo<classname>::FactoryTable&     \
+        reflection::SubclassInfo<classname>::GetFactoryTable() { \
             static const FactoryTable m {
 
 #define SUBCLASS_DECLARATION(subclass)                   \
     { typeid(subclass).name(), []()                      \
         { return static_cast<Class*>(new subclass()); }},
 
-#define SUBCLASS_DECLARATION_END()  }; return m; } };
+#define SUBCLASS_DECLARATION_END()  }; return m; }
 
 
 namespace reflection {
