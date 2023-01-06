@@ -196,16 +196,16 @@ const char* src = R"(
 )";
 
 int main() {
-    auto t = std::make_unique<Test>();
+    Test t;
 
     rapidjson::Document document_origin;
     document_origin.Parse(src);
-    t->Deserialize(document_origin);
-    t->Deserialize(document_origin); // Just for testing memory leak
+    Deserialize(t, document_origin);
+    Deserialize(t, document_origin); // Just for testing memory leak
 
     rapidjson::StringBuffer sb;
     rapidjson::PrettyWriter<rapidjson::StringBuffer> writer(sb);
-    t->Serialize(writer);
+    Serialize(t, writer);
     
     rapidjson::Document document_new;
     document_new.Parse(sb.GetString());
@@ -215,11 +215,11 @@ int main() {
         if (ImGui::Button("Serialize")) {
             rapidjson::StringBuffer sb;
             rapidjson::PrettyWriter<rapidjson::StringBuffer> writer(sb);
-            t->Serialize(writer);
+            Serialize(t, writer);
             puts(sb.GetString());
         }
         ImGui::Separator();
-        t->DrawAutoImGui();
+        DrawAutoImGui(t);
     };
 
     glfwInit();

@@ -15,6 +15,10 @@
 using reflection::ISerialization;
 using reflection::IAutoImGui;
 
+using reflection::Serialize;
+using reflection::Deserialize;
+using reflection::DrawAutoImGui;
+
 class Shape : public ISerialization, public IAutoImGui {
 public:
     virtual ~Shape() {};
@@ -90,15 +94,15 @@ const char* src = R"(
 )";
 
 int main() {
-    auto shapes = std::make_unique<Shapes>();
+    Shapes shapes;
 
     rapidjson::Document document_origin;
     document_origin.Parse(src);
-    shapes->Deserialize(document_origin);
+    Deserialize(shapes, document_origin);
 
     rapidjson::StringBuffer sb;
     rapidjson::PrettyWriter<rapidjson::StringBuffer> writer(sb);
-    shapes->Serialize(writer);
+    Serialize(shapes, writer);
     
     rapidjson::Document document_new;
     document_new.Parse(sb.GetString());
@@ -109,11 +113,11 @@ int main() {
             system("cls");
             rapidjson::StringBuffer sb;
             rapidjson::PrettyWriter<rapidjson::StringBuffer> writer(sb);
-            shapes->Serialize(writer);
+            Serialize(shapes, writer);
             puts(sb.GetString());
         }
         ImGui::Separator();
-        shapes->DrawAutoImGui();
+        DrawAutoImGui(shapes);
     };
 
     glfwInit();
