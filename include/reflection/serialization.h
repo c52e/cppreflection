@@ -138,7 +138,7 @@ public:
 };
 
 template<class T>
-class Type<ISerialization, T, std::enable_if_t<std::is_base_of_v<ISerialization, T>>>
+class Type<ISerialization, T, std::enable_if_t<std::is_base_of_v<ISerialization, T> || IsReflectableStruct<ISerialization, T>::value>>
     : public TypeBase<ISerialization, T> {
 public:
     using ValueType = T;
@@ -146,7 +146,7 @@ public:
     void Serialize(const void* addr, rapidjson::PrettyWriter<rapidjson::StringBuffer>& writer) const override {
         const auto& v = *static_cast<const ValueType*>(addr);
         writer.StartObject();
-        for (const auto& [name, fun] : static_cast<const ISerialization&>(v).GetFieldTable()) {
+        for (const auto& [name, fun] : GetFieldTable(v, static_cast<ISerialization*>(nullptr))) {
             writer.String(name.c_str());
             auto info = fun(const_cast<ValueType*>(&v));
             info.type->Serialize(info.address, writer);
@@ -157,7 +157,7 @@ public:
     void Deserialize(void* addr, const rapidjson::Value& value) const override {
         R_ASSERT(value.IsObject());
         auto& v = *static_cast<ValueType*>(addr);
-        for (const auto& [name, fun] : static_cast<const ISerialization&>(v).GetFieldTable()) {
+        for (const auto& [name, fun] : GetFieldTable(v, static_cast<ISerialization*>(nullptr))) {
             auto itr = value.FindMember(name.c_str());
             if (itr != value.MemberEnd()) {
                 auto info = fun(&v);

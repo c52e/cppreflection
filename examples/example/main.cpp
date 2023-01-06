@@ -27,6 +27,18 @@ struct my_delete {
     }
 };
 
+using Pair = std::pair<int, float[2]>;
+
+STRUCT_FIELD_DECLARATION_BEGIN(Pair, ISerialization)
+    STRUCT_FIELD_DECLARATION("first", first)
+    STRUCT_FIELD_DECLARATION("second", second)
+STRUCT_FIELD_DECLARATION_END()
+
+STRUCT_FIELD_DECLARATION_BEGIN(Pair, IAutoImGui)
+    STRUCT_FIELD_DECLARATION("first", first)
+    STRUCT_FIELD_DECLARATION("second", second)
+STRUCT_FIELD_DECLARATION_END()
+
 class Test : public ISerialization, public IAutoImGui {
 public:
     Enum e{};
@@ -50,6 +62,7 @@ public:
     glm::mat2x3 glmmat2x3;
     Rectangle rectangle;
     std::unique_ptr<Test> pnext;
+    Pair pair;
 
 FIELD_DECLARATION_BEGIN(ISerialization)
     FIELD_DECLARATION("e", e)
@@ -70,6 +83,7 @@ FIELD_DECLARATION_BEGIN(ISerialization)
     FIELD_DECLARATION("glmmat2x3", glmmat2x3)
     FIELD_DECLARATION("rectangle", rectangle)
     FIELD_DECLARATION("pnext", pnext)
+    FIELD_DECLARATION("pair", pair)
 FIELD_DECLARATION_END()
 
 FIELD_DECLARATION_BEGIN(IAutoImGui)
@@ -89,6 +103,7 @@ FIELD_DECLARATION_BEGIN(IAutoImGui)
     FIELD_DECLARATION("glmmat2x3", glmmat2x3)
     FIELD_DECLARATION("rectangle", rectangle)
     FIELD_DECLARATION("umap", umap)
+    FIELD_DECLARATION("pair", pair)
 FIELD_DECLARATION_END()
 };
 
@@ -191,7 +206,11 @@ const char* src = R"(
         "w": 1.0,
         "h": 4
     },
-    "pnext": null
+    "pnext": null,
+    "pair": {
+        "first": 1,
+        "second": [2.0,3.0]
+    }
 }
 )";
 

@@ -60,6 +60,30 @@
 #define SUBCLASS_DECLARATION_END()  }; return m; }
 
 
+// Declare in struct header file (after struct definition)
+#define STRUCT_FIELD_DECLARATION_BEGIN(structname, interfacename)                  \
+    template<> struct reflection::IsReflectableStruct<interfacename, structname> { \
+        static constexpr bool value = true;  };                                    \
+    template<> inline const auto& reflection::GetFieldTable(                       \
+            const structname& object, interfacename* ) {                           \
+        using Class = structname;                                                  \
+        using InterfaceType = interfacename;                                       \
+        using FieldInfo = reflection::IReflectionBase<InterfaceType>::FieldInfo;   \
+        using GetFieldFunc = FieldInfo(*) (Class*);                                \
+        static std::map<std::string, GetFieldFunc> m{
+
+#define STRUCT_FIELD_DECLARATION(name, field, ...)                    \
+    { name, [](Class* p) {                                            \
+        using T = decltype(p->field);                                 \
+        static reflection::Type<InterfaceType, T>::Userdata d;        \
+        __VA_ARGS__;                                                  \
+        return FieldInfo {                                            \
+            static_cast<void*>(&(p->field)),                          \
+            reflection::Type<InterfaceType, T>::GetIType(),           \
+            static_cast<reflection::UserdataBase*>(&d) }; }},
+
+#define STRUCT_FIELD_DECLARATION_END()  }; return m; }
+
 namespace reflection {
 
 template<class I>
@@ -85,6 +109,11 @@ public:
     virtual ~IReflectionBase() {};
 };
 
+template<class I, class T>
+const auto& GetFieldTable(const T& object, I* = nullptr) {
+    return object.GetFieldTable(static_cast<I*>(nullptr));
+}
+
 template<class I, class T, class Enable = void>
 class Type;
 
@@ -107,6 +136,11 @@ protected:
 template<class T>
 struct SubclassInfo {
     static constexpr bool has = false;
+};
+
+template<class I, class T>
+struct IsReflectableStruct {
+    static constexpr bool value = false;
 };
 
 } // namespace reflection
