@@ -158,12 +158,14 @@ const char* src = R"(
         {
             "type": "class Circle",
             "data": {
+                "id": 1,
                 "r": 1.0
             }
         },
         {
             "type": "class Rectangle",
             "data": {
+                "id": 2,
                 "w": 2.0,
                 "h": 3
             }
@@ -185,6 +187,7 @@ const char* src = R"(
         [0.25,0.5,0.75]
     ],
     "rectangle": {
+        "id": 3,
         "w": 1.0,
         "h": 4
     },

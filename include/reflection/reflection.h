@@ -10,7 +10,7 @@
             interfacename* = nullptr) const override {                            \
         using Class = std::decay_t<decltype(*this)>;                              \
         using InterfaceType = interfacename;                                      \
-        static const reflection::IReflectionBase<InterfaceType>::FieldTable m{
+        static reflection::IReflectionBase<InterfaceType>::FieldTable m{
 
 #define FIELD_DECLARATION(name, field, ...)                                       \
     { name, [](InterfaceType* arg) {                                              \
@@ -22,6 +22,16 @@
             static_cast<void*>(&(p->field)),                                      \
             reflection::Type<InterfaceType, T>::GetIType(),                       \
             static_cast<reflection::UserdataBase*>(&d) }; }},
+
+#define FIELD_DECLARATION_END_WITH_BASE_CLASS(BaseClass) };  \
+        static bool initialized = false;                     \
+        if (!initialized) {                                  \
+            const auto& base = BaseClass::GetFieldTable(     \
+                static_cast<InterfaceType*>(nullptr));       \
+            m.insert(base.begin(), base.end());              \
+            initialized = true;}                             \
+        return m; }
+
 
 #define FIELD_DECLARATION_END() }; return m; }
 
