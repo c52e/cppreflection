@@ -1,12 +1,12 @@
 #pragma once
 
-#include "autoimgui.h"
-
 #include <glm/glm.hpp>
+
+#include "autoimgui.h"
 
 namespace reflection {
 
-template<glm::length_t L, typename T, glm::qualifier Q>
+template <glm::length_t L, typename T, glm::qualifier Q>
 class Type<IAutoImGui, glm::vec<L, T, Q>>
     : public TypeBase<IAutoImGui, glm::vec<L, T, Q>> {
 public:
@@ -15,7 +15,7 @@ public:
     }
 };
 
-template<glm::length_t C, glm::length_t R, typename T, glm::qualifier Q>
+template <glm::length_t C, glm::length_t R, typename T, glm::qualifier Q>
 class Type<IAutoImGui, glm::mat<C, R, T, Q>>
     : public TypeBase<IAutoImGui, glm::mat<C, R, T, Q>> {
 public:
@@ -27,4 +27,4 @@ public:
     }
 };
 
-} // namespace reflection
+}  // namespace reflection

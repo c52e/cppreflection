@@ -4,15 +4,15 @@
 
 class Shape : public ISerialization, public IAutoImGui {
 public:
-    virtual ~Shape() {};
+    virtual ~Shape(){};
 
     int id{};
 
     FIELD_DECLARATION_BEGIN(ISerialization)
-        FIELD_DECLARATION("id", id)
+    FIELD_DECLARATION("id", id)
     FIELD_DECLARATION_END()
     FIELD_DECLARATION_BEGIN(IAutoImGui)
-        FIELD_DECLARATION("id", id)
+    FIELD_DECLARATION("id", id)
     FIELD_DECLARATION_END()
 };
 

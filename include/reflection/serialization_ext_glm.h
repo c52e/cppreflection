@@ -1,12 +1,12 @@
 #pragma once
 
-#include "serialization.h"
-
 #include <glm/glm.hpp>
+
+#include "serialization.h"
 
 namespace reflection {
 
-template<glm::length_t L, typename T, glm::qualifier Q>
+template <glm::length_t L, typename T, glm::qualifier Q>
 class Type<ISerialization, glm::vec<L, T, Q>>
     : public TypeBase<ISerialization, glm::vec<L, T, Q>> {
 public:
@@ -19,7 +19,7 @@ public:
     }
 };
 
-template<glm::length_t C, glm::length_t R, typename T, glm::qualifier Q>
+template <glm::length_t C, glm::length_t R, typename T, glm::qualifier Q>
 class Type<ISerialization, glm::mat<C, R, T, Q>>
     : public TypeBase<ISerialization, glm::mat<C, R, T, Q>> {
 public:
@@ -35,4 +35,4 @@ public:
     }
 };
 
-} // namespace reflection
+}  // namespace reflection

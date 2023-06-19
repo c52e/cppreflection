@@ -1,18 +1,17 @@
 #pragma once
 
-#include "reflection.h"
-
-#include <memory>
-#include <array>
-#include <vector>
-#include <list>
-#include <map>
-#include <unordered_map>
-
 #include <rapidjson/document.h>
 #include <rapidjson/prettywriter.h>
-#include <magic_enum.hpp>
 
+#include <array>
+#include <list>
+#include <magic_enum.hpp>
+#include <map>
+#include <memory>
+#include <unordered_map>
+#include <vector>
+
+#include "reflection.h"
 #include "util.h"
 
 #ifndef FIELD_NOT_FOUND_HANDLE
@@ -25,7 +24,7 @@ namespace reflection {
 class ISerialization : public IReflectionBase<ISerialization> {
 };
 
-template<>
+template <>
 class IType<ISerialization> {
 public:
     virtual void Serialize(const void*, rapidjson::PrettyWriter<rapidjson::StringBuffer>&) const = 0;
@@ -33,17 +32,17 @@ public:
     virtual void Deserialize(void*, const rapidjson::Value&) const = 0;
 };
 
-template<class T>
+template <class T>
 void Serialize(const T& object, rapidjson::PrettyWriter<rapidjson::StringBuffer>& writer) {
     Type<ISerialization, T>::GetIType()->Serialize(&object, writer);
 }
 
-template<class T>
+template <class T>
 void Deserialize(T& object, const rapidjson::Value& value) {
     Type<ISerialization, T>::GetIType()->Deserialize(&object, value);
 }
 
-template<>
+template <>
 class Type<ISerialization, int> : public TypeBase<ISerialization, int> {
 public:
     void Serialize(const void* addr, rapidjson::PrettyWriter<rapidjson::StringBuffer>& writer) const override {
@@ -58,7 +57,7 @@ public:
     }
 };
 
-template<>
+template <>
 class Type<ISerialization, bool> : public TypeBase<ISerialization, bool> {
 public:
     void Serialize(const void* addr, rapidjson::PrettyWriter<rapidjson::StringBuffer>& writer) const override {
@@ -73,7 +72,7 @@ public:
     }
 };
 
-template<>
+template <>
 class Type<ISerialization, float> : public TypeBase<ISerialization, float> {
 public:
     void Serialize(const void* addr, rapidjson::PrettyWriter<rapidjson::StringBuffer>& writer) const override {
@@ -88,7 +87,7 @@ public:
     }
 };
 
-template<>
+template <>
 class Type<ISerialization, double> : public TypeBase<ISerialization, double> {
 public:
     void Serialize(const void* addr, rapidjson::PrettyWriter<rapidjson::StringBuffer>& writer) const override {
@@ -103,7 +102,7 @@ public:
     }
 };
 
-template<>
+template <>
 class Type<ISerialization, std::string> : public TypeBase<ISerialization, std::string> {
 public:
     void Serialize(const void* addr, rapidjson::PrettyWriter<rapidjson::StringBuffer>& writer) const override {
@@ -118,7 +117,7 @@ public:
     }
 };
 
-template<class T>
+template <class T>
 class Type<ISerialization, T, std::enable_if_t<std::is_enum_v<T>>> : public TypeBase<ISerialization, T> {
 public:
     static_assert(!std::is_same_v<ISerialization, T>);
@@ -137,7 +136,7 @@ public:
     }
 };
 
-template<class T>
+template <class T>
 class Type<ISerialization, T, std::enable_if_t<std::is_base_of_v<ISerialization, T> || IsReflectableStruct<ISerialization, T>::value>>
     : public TypeBase<ISerialization, T> {
 public:
@@ -162,16 +161,15 @@ public:
             if (itr != value.MemberEnd()) {
                 auto info = fun(&v);
                 info.type->Deserialize(info.address, itr->value);
-            }
-            else {
+            } else {
                 FIELD_NOT_FOUND_HANDLE("Field \"" + name + "\" not found");
             }
         }
     }
 };
 
-template<class _Ty, class _Dx>
-class Type<ISerialization, std::unique_ptr<_Ty, _Dx>, std::enable_if_t<std::is_base_of_v<ISerialization, _Ty>&& SubclassInfo<_Ty>::has>>
+template <class _Ty, class _Dx>
+class Type<ISerialization, std::unique_ptr<_Ty, _Dx>, std::enable_if_t<std::is_base_of_v<ISerialization, _Ty> && SubclassInfo<_Ty>::has>>
     : public TypeBase<ISerialization, std::unique_ptr<_Ty, _Dx>> {
 public:
     using ValueType = std::unique_ptr<_Ty, _Dx>;
@@ -187,8 +185,7 @@ public:
             writer.String(kDataKey);
             Type<ISerialization, _Ty>::GetIType()->Serialize(v.get(), writer);
             writer.EndObject();
-        }
-        else {
+        } else {
             writer.Null();
         }
     }
@@ -210,8 +207,8 @@ public:
     }
 };
 
-template<class _Ty, class _Dx>
-class Type<ISerialization, std::unique_ptr<_Ty, _Dx>, std::enable_if_t<!(std::is_base_of_v<ISerialization, _Ty>&& SubclassInfo<_Ty>::has)>>
+template <class _Ty, class _Dx>
+class Type<ISerialization, std::unique_ptr<_Ty, _Dx>, std::enable_if_t<!(std::is_base_of_v<ISerialization, _Ty> && SubclassInfo<_Ty>::has)>>
     : public TypeBase<ISerialization, std::unique_ptr<_Ty, _Dx>> {
 public:
     using ValueType = std::unique_ptr<_Ty, _Dx>;
@@ -228,8 +225,7 @@ public:
         auto& v = *static_cast<ValueType*>(addr);
         if (value.IsNull()) {
             v.reset();
-        }
-        else {
+        } else {
             if (v == nullptr)
                 v.reset(new _Ty());
             Type<ISerialization, _Ty>::GetIType()->Deserialize(v.get(), value);
@@ -237,7 +233,7 @@ public:
     }
 };
 
-template<class _Ty, size_t _Size>
+template <class _Ty, size_t _Size>
 struct _SerializationArrayTypeHelper {
     static void Serialize(const void* addr, rapidjson::PrettyWriter<rapidjson::StringBuffer>& writer) {
         const auto arr = static_cast<const _Ty*>(addr);
@@ -258,8 +254,8 @@ struct _SerializationArrayTypeHelper {
     }
 };
 
-template<class _Ty, size_t _Size>
-class Type< ISerialization, _Ty[_Size]>
+template <class _Ty, size_t _Size>
+class Type<ISerialization, _Ty[_Size]>
     : public TypeBase<ISerialization, _Ty[_Size]> {
 public:
     void Serialize(const void* addr, rapidjson::PrettyWriter<rapidjson::StringBuffer>& writer) const override {
@@ -271,8 +267,8 @@ public:
     }
 };
 
-template<class _Ty, size_t _Size>
-class Type< ISerialization, std::array<_Ty, _Size>>
+template <class _Ty, size_t _Size>
+class Type<ISerialization, std::array<_Ty, _Size>>
     : public TypeBase<ISerialization, std::array<_Ty, _Size>> {
 public:
     void Serialize(const void* addr, rapidjson::PrettyWriter<rapidjson::StringBuffer>& writer) const override {
@@ -284,10 +280,8 @@ public:
     }
 };
 
-template<template<class _Ty, class _Alloc> class ContainerType, class _Ty, class _Alloc>
-class Type<ISerialization, ContainerType<_Ty, _Alloc>
-    , std::enable_if_t<std::is_same_v<ContainerType<_Ty, _Alloc>, std::vector<_Ty, _Alloc>>
-                    || std::is_same_v<ContainerType<_Ty, _Alloc>, std::list<_Ty, _Alloc>>>>
+template <template <class _Ty, class _Alloc> class ContainerType, class _Ty, class _Alloc>
+class Type<ISerialization, ContainerType<_Ty, _Alloc>, std::enable_if_t<std::is_same_v<ContainerType<_Ty, _Alloc>, std::vector<_Ty, _Alloc>> || std::is_same_v<ContainerType<_Ty, _Alloc>, std::list<_Ty, _Alloc>>>>
     : public TypeBase<ISerialization, ContainerType<_Ty, _Alloc>> {
 public:
     using ValueType = ContainerType<_Ty, _Alloc>;
@@ -314,7 +308,7 @@ public:
     }
 };
 
-template<class T>
+template <class T>
 struct _SerializationMapTypeHelper {
     using _Ty = typename T::mapped_type;
 
@@ -331,7 +325,7 @@ struct _SerializationMapTypeHelper {
     static void Deserialize(void* addr, const rapidjson::Value& value) {
         R_ASSERT(value.IsObject());
         auto& v = *static_cast<T*>(addr);
-        
+
         v.clear();
         for (const auto& e : value.GetObject()) {
             _Ty tmp{};
@@ -341,36 +335,36 @@ struct _SerializationMapTypeHelper {
     }
 };
 
-template<template<class _Kty, class _Ty, class _Pr, class _Alloc> class ContainerType,
-    class _Kty, class _Ty, class _Pr, class _Alloc>
-    class Type<ISerialization, ContainerType<_Kty, _Ty, _Pr, _Alloc>, std::enable_if_t<std::is_same_v<std::string, _Kty>>>
+template <template <class _Kty, class _Ty, class _Pr, class _Alloc> class ContainerType,
+          class _Kty, class _Ty, class _Pr, class _Alloc>
+class Type<ISerialization, ContainerType<_Kty, _Ty, _Pr, _Alloc>, std::enable_if_t<std::is_same_v<std::string, _Kty>>>
     : public TypeBase<ISerialization, ContainerType<_Kty, _Ty, _Pr, _Alloc>> {
-    public:
-        using ValueType = ContainerType<_Kty, _Ty, _Pr, _Alloc>;
+public:
+    using ValueType = ContainerType<_Kty, _Ty, _Pr, _Alloc>;
 
-        void Serialize(const void* addr, rapidjson::PrettyWriter<rapidjson::StringBuffer>& writer) const override {
-            _SerializationMapTypeHelper<ValueType>::Serialize(addr, writer);
-        }
+    void Serialize(const void* addr, rapidjson::PrettyWriter<rapidjson::StringBuffer>& writer) const override {
+        _SerializationMapTypeHelper<ValueType>::Serialize(addr, writer);
+    }
 
-        void Deserialize(void* addr, const rapidjson::Value& value) const override {
-            _SerializationMapTypeHelper<ValueType>::Deserialize(addr, value);
-        }
+    void Deserialize(void* addr, const rapidjson::Value& value) const override {
+        _SerializationMapTypeHelper<ValueType>::Deserialize(addr, value);
+    }
 };
 
-template<template <class _Kty, class _Ty, class _Hasher, class _Keyeq, class _Alloc> class ContainerType,
-    class _Kty, class _Ty, class _Hasher, class _Keyeq, class _Alloc>
-    class Type<ISerialization, ContainerType<_Kty, _Ty, _Hasher, _Keyeq, _Alloc>, std::enable_if_t<std::is_same_v<std::string, _Kty>>>
+template <template <class _Kty, class _Ty, class _Hasher, class _Keyeq, class _Alloc> class ContainerType,
+          class _Kty, class _Ty, class _Hasher, class _Keyeq, class _Alloc>
+class Type<ISerialization, ContainerType<_Kty, _Ty, _Hasher, _Keyeq, _Alloc>, std::enable_if_t<std::is_same_v<std::string, _Kty>>>
     : public TypeBase<ISerialization, ContainerType<_Kty, _Ty, _Hasher, _Keyeq, _Alloc>> {
-    public:
-        using ValueType = ContainerType<_Kty, _Ty, _Hasher, _Keyeq, _Alloc>;
+public:
+    using ValueType = ContainerType<_Kty, _Ty, _Hasher, _Keyeq, _Alloc>;
 
-        void Serialize(const void* addr, rapidjson::PrettyWriter<rapidjson::StringBuffer>& writer) const override {
-            _SerializationMapTypeHelper<ValueType>::Serialize(addr, writer);
-        }
+    void Serialize(const void* addr, rapidjson::PrettyWriter<rapidjson::StringBuffer>& writer) const override {
+        _SerializationMapTypeHelper<ValueType>::Serialize(addr, writer);
+    }
 
-        void Deserialize(void* addr, const rapidjson::Value& value) const override {
-            _SerializationMapTypeHelper<ValueType>::Deserialize(addr, value);
-        }
+    void Deserialize(void* addr, const rapidjson::Value& value) const override {
+        _SerializationMapTypeHelper<ValueType>::Deserialize(addr, value);
+    }
 };
 
-} // namespace reflection
+}  // namespace reflection

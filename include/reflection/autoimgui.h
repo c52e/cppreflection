@@ -1,17 +1,16 @@
 #pragma once
 
-#include "reflection.h"
-
-#include <memory>
-#include <array>
-#include <vector>
-#include <list>
-#include <map>
-#include <unordered_map>
-
 #include <imgui.h>
-#include <magic_enum.hpp>
 
+#include <array>
+#include <list>
+#include <magic_enum.hpp>
+#include <map>
+#include <memory>
+#include <unordered_map>
+#include <vector>
+
+#include "reflection.h"
 #include "util.h"
 
 namespace reflection {
@@ -19,19 +18,19 @@ namespace reflection {
 class IAutoImGui : public IReflectionBase<IAutoImGui> {
 };
 
-template<>
+template <>
 class IType<IAutoImGui> {
 public:
     virtual void DrawAutoImGui(void* addr, const char* name, const UserdataBase* userdata) const = 0;
 };
 
-template<class T>
+template <class T>
 void DrawAutoImGui(T& object, const char* name = nullptr) {
     const Type<IAutoImGui, T>::Userdata userdata = {};
     Type<IAutoImGui, T>::GetIType()->DrawAutoImGui(&object, name, &userdata);
 }
 
-template<>
+template <>
 class Type<IAutoImGui, int> : public TypeBase<IAutoImGui, int> {
 public:
     struct Userdata : UserdataBase {
@@ -46,7 +45,7 @@ public:
     }
 };
 
-template<>
+template <>
 class Type<IAutoImGui, bool> : public TypeBase<IAutoImGui, bool> {
 public:
     void DrawAutoImGui(void* addr, const char* name, const UserdataBase* userdata) const override {
@@ -55,7 +54,7 @@ public:
     }
 };
 
-template<>
+template <>
 class Type<IAutoImGui, float> : public TypeBase<IAutoImGui, float> {
 public:
     struct Userdata : UserdataBase {
@@ -70,7 +69,7 @@ public:
     }
 };
 
-template<class T>
+template <class T>
 class Type<IAutoImGui, T, std::enable_if_t<std::is_enum_v<T>>> : public TypeBase<IAutoImGui, T> {
 public:
     Type() {
@@ -97,11 +96,12 @@ public:
             }
         }
     }
+
 private:
     std::array<std::string, magic_enum::enum_count<T>()> enums;
 };
 
-template<class T>
+template <class T>
 class Type<IAutoImGui, T, std::enable_if_t<std::is_base_of_v<IAutoImGui, T> || IsReflectableStruct<IAutoImGui, T>::value>>
     : public TypeBase<IAutoImGui, T> {
 public:
@@ -118,12 +118,12 @@ public:
     }
 };
 
-template<class _Ty, class _Dx>
+template <class _Ty, class _Dx>
 class Type<IAutoImGui, std::unique_ptr<_Ty, _Dx>> : public TypeBase<IAutoImGui, std::unique_ptr<_Ty, _Dx>> {
 public:
     using ValueType = std::unique_ptr<_Ty, _Dx>;
 
-    struct Userdata : Type< IAutoImGui, _Ty>::Userdata {};
+    struct Userdata : Type<IAutoImGui, _Ty>::Userdata {};
 
     void DrawAutoImGui(void* addr, const char* name, const UserdataBase* userdata) const override {
         auto& v = *static_cast<ValueType*>(addr);
@@ -138,8 +138,7 @@ public:
             if (tree && v != nullptr) {
                 Type<IAutoImGui, _Ty>::GetIType()->DrawAutoImGui(v.get(), "value", userdata);
             }
-        }
-        else {
+        } else {
             ImGui::Text("%s is null", name);
             if (ScopeImGuiPopupContextItem popup(name); popup) {
                 if constexpr (std::is_base_of_v<IAutoImGui, _Ty> && SubclassInfo<_Ty>::has) {
@@ -149,8 +148,7 @@ public:
                             break;
                         }
                     }
-                }
-                else {
+                } else {
                     if (ImGui::MenuItem("new")) {
                         v.reset(new _Ty());
                     }
@@ -160,12 +158,12 @@ public:
     }
 };
 
-template<class _Ty, size_t _Size>
+template <class _Ty, size_t _Size>
 struct _AutoImGuiArrayTypeHelper {
     static void DrawAutoImGui(void* addr, const char* name, const UserdataBase* userdata) {
         auto arr = static_cast<_Ty*>(addr);
 
-        if (ScopeImGuiTreeNode tree(name);  tree) {
+        if (ScopeImGuiTreeNode tree(name); tree) {
             constexpr size_t kBufSize = 128;
             char buf[kBufSize];
             for (size_t i = 0; i < _Size; ++i) {
@@ -176,37 +174,35 @@ struct _AutoImGuiArrayTypeHelper {
     }
 };
 
-template<class _Ty, size_t _Size>
-class Type< IAutoImGui, _Ty[_Size]>
+template <class _Ty, size_t _Size>
+class Type<IAutoImGui, _Ty[_Size]>
     : public TypeBase<IAutoImGui, _Ty[_Size]> {
 public:
-    struct Userdata : Type< IAutoImGui, _Ty>::Userdata {};
+    struct Userdata : Type<IAutoImGui, _Ty>::Userdata {};
 
     void DrawAutoImGui(void* addr, const char* name, const UserdataBase* userdata) const override {
         _AutoImGuiArrayTypeHelper<_Ty, _Size>::DrawAutoImGui(addr, name, userdata);
     }
 };
 
-template<class _Ty, size_t _Size>
-class Type< IAutoImGui, std::array<_Ty, _Size>>
+template <class _Ty, size_t _Size>
+class Type<IAutoImGui, std::array<_Ty, _Size>>
     : public TypeBase<IAutoImGui, std::array<_Ty, _Size>> {
 public:
-    struct Userdata : Type< IAutoImGui, _Ty>::Userdata {};
+    struct Userdata : Type<IAutoImGui, _Ty>::Userdata {};
 
     void DrawAutoImGui(void* addr, const char* name, const UserdataBase* userdata) const override {
         _AutoImGuiArrayTypeHelper<_Ty, _Size>::DrawAutoImGui(addr, name, userdata);
     }
 };
 
-template<template<class _Ty, class _Alloc> class ContainerType, class _Ty, class _Alloc>
-class Type<IAutoImGui, ContainerType<_Ty, _Alloc>
-    , std::enable_if_t<std::is_same_v<ContainerType<_Ty, _Alloc>, std::vector<_Ty, _Alloc>>
-                    || std::is_same_v<ContainerType<_Ty, _Alloc>, std::list<_Ty, _Alloc>>>>
+template <template <class _Ty, class _Alloc> class ContainerType, class _Ty, class _Alloc>
+class Type<IAutoImGui, ContainerType<_Ty, _Alloc>, std::enable_if_t<std::is_same_v<ContainerType<_Ty, _Alloc>, std::vector<_Ty, _Alloc>> || std::is_same_v<ContainerType<_Ty, _Alloc>, std::list<_Ty, _Alloc>>>>
     : public TypeBase<IAutoImGui, ContainerType<_Ty, _Alloc>> {
 public:
     using ValueType = ContainerType<_Ty, _Alloc>;
 
-    struct Userdata : Type< IAutoImGui, _Ty>::Userdata {};
+    struct Userdata : Type<IAutoImGui, _Ty>::Userdata {};
 
     void DrawAutoImGui(void* addr, const char* name, const UserdataBase* userdata) const override {
         auto& v = *static_cast<ValueType*>(addr);
@@ -215,11 +211,9 @@ public:
         if (ScopeImGuiPopupContextItem popup; popup) {
             if (ImGui::MenuItem("clear")) {
                 v.clear();
-            }
-            else if (ImGui::MenuItem("append")) {
+            } else if (ImGui::MenuItem("append")) {
                 v.emplace_back();
-            }
-            else if (ImGui::MenuItem("pop")) {
+            } else if (ImGui::MenuItem("pop")) {
                 if (!v.empty()) {
                     v.pop_back();
                 }
@@ -234,7 +228,8 @@ public:
             for (auto itr = ++v.begin(); itr != v.end(); ++itr) {
                 snprintf(buf, kBufSize, "exchange(%zu, %zu)", i - 1, i);
                 if (ImGui::Button(buf)) {
-                    auto pre = itr; --pre;
+                    auto pre = itr;
+                    --pre;
                     std::swap(*itr, *pre);
                     break;
                 }
@@ -245,7 +240,7 @@ public:
     }
 };
 
-template<class T>
+template <class T>
 struct _AutoImGuiMapTypeHelper {
     using _Ty = typename T::mapped_type;
 
@@ -265,7 +260,6 @@ struct _AutoImGuiMapTypeHelper {
                 pair.first = keybuf;
                 v.insert(std::move(pair));
             }
-            
         }
         if (tree) {
             int id = 0;
@@ -282,32 +276,32 @@ struct _AutoImGuiMapTypeHelper {
     }
 };
 
-template<template<class _Kty, class _Ty, class _Pr, class _Alloc> class ContainerType,
-    class _Kty, class _Ty, class _Pr, class _Alloc>
-    class Type<IAutoImGui, ContainerType<_Kty, _Ty, _Pr, _Alloc>, std::enable_if_t<std::is_same_v<std::string, _Kty>>>
+template <template <class _Kty, class _Ty, class _Pr, class _Alloc> class ContainerType,
+          class _Kty, class _Ty, class _Pr, class _Alloc>
+class Type<IAutoImGui, ContainerType<_Kty, _Ty, _Pr, _Alloc>, std::enable_if_t<std::is_same_v<std::string, _Kty>>>
     : public TypeBase<IAutoImGui, ContainerType<_Kty, _Ty, _Pr, _Alloc>> {
-    public:
-        using ValueType = ContainerType<_Kty, _Ty, _Pr, _Alloc>;
+public:
+    using ValueType = ContainerType<_Kty, _Ty, _Pr, _Alloc>;
 
-        struct Userdata : Type< IAutoImGui, _Ty>::Userdata {};
+    struct Userdata : Type<IAutoImGui, _Ty>::Userdata {};
 
-        void DrawAutoImGui(void* addr, const char* name, const UserdataBase* userdata) const override {
-            _AutoImGuiMapTypeHelper<ValueType>::DrawAutoImGui(addr, name, userdata);
-        }
+    void DrawAutoImGui(void* addr, const char* name, const UserdataBase* userdata) const override {
+        _AutoImGuiMapTypeHelper<ValueType>::DrawAutoImGui(addr, name, userdata);
+    }
 };
 
-template<template <class _Kty, class _Ty, class _Hasher, class _Keyeq, class _Alloc> class ContainerType,
-    class _Kty, class _Ty, class _Hasher, class _Keyeq, class _Alloc>
-    class Type<IAutoImGui, ContainerType<_Kty, _Ty, _Hasher, _Keyeq, _Alloc>, std::enable_if_t<std::is_same_v<std::string, _Kty>>>
+template <template <class _Kty, class _Ty, class _Hasher, class _Keyeq, class _Alloc> class ContainerType,
+          class _Kty, class _Ty, class _Hasher, class _Keyeq, class _Alloc>
+class Type<IAutoImGui, ContainerType<_Kty, _Ty, _Hasher, _Keyeq, _Alloc>, std::enable_if_t<std::is_same_v<std::string, _Kty>>>
     : public TypeBase<IAutoImGui, ContainerType<_Kty, _Ty, _Hasher, _Keyeq, _Alloc>> {
-    public:
-        using ValueType = ContainerType<_Kty, _Ty, _Hasher, _Keyeq, _Alloc>;
+public:
+    using ValueType = ContainerType<_Kty, _Ty, _Hasher, _Keyeq, _Alloc>;
 
-        struct Userdata : Type< IAutoImGui, _Ty>::Userdata {};
+    struct Userdata : Type<IAutoImGui, _Ty>::Userdata {};
 
-        void DrawAutoImGui(void* addr, const char* name, const UserdataBase* userdata) const override {
-            _AutoImGuiMapTypeHelper<ValueType>::DrawAutoImGui(addr, name, userdata);
-        }
+    void DrawAutoImGui(void* addr, const char* name, const UserdataBase* userdata) const override {
+        _AutoImGuiMapTypeHelper<ValueType>::DrawAutoImGui(addr, name, userdata);
+    }
 };
 
-} // namespace reflection
+}  // namespace reflection
