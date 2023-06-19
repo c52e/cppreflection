@@ -24,6 +24,11 @@ using reflection::Serialize;
 class Shape : public ISerialization, public IAutoImGui {
 public:
     virtual ~Shape(){};
+
+    FIELD_DECLARATION_BEGIN(ISerialization)
+    FIELD_DECLARATION_END()
+    FIELD_DECLARATION_BEGIN(IAutoImGui)
+    FIELD_DECLARATION_END()
 };
 
 HAS_SUBCLASS(Shape)
